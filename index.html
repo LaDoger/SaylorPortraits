@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.text())
     .then(data => {
         const imageNames = data.trim().split(/\r?\n/);
-        const basePath = 'https://ladoger.github.io/SaylorPortraits/images/'; // Adjust this path as needed
+        const basePath = 'https://ladoger.github.io/SaylorPortraits/jpg/'; // Adjust this path as needed
 
         // Shuffle the array of image names
         for (let i = imageNames.length - 1; i > 0; i--) {
@@ -109,8 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = document.createElement('img');
             img.src = `${basePath}${name}`;
             img.alt = name;
-            // Prioritize loading for the first few images
-            img.loading = index < 6 ? "eager" : "lazy";
+            img.loading = index < 6 ? "eager" : "lazy"; // Prioritize loading for the first few images
             a.href = img.src;
             a.target = '_blank';
             a.appendChild(img);
