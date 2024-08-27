@@ -88,56 +88,37 @@
 </footer>
 
 <script>
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', () => {
     const gallery = document.getElementById('gallery');
-    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
 
-    fetch('/images')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.text();
-    })
-    .then(text => {
-        const parser = new DOMParser();
-        const htmlDocument = parser.parseFromString(text, "text/html");
-        const links = htmlDocument.documentElement.querySelectorAll('a');
-        
-        // Collect all image links into an array
-        let imageLinks = [];
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            const ext = href.split('.').pop().toLowerCase();
-            if (imageExtensions.includes(ext)) {
-                imageLinks.push(`/images/${href}`);
-            }
-        });
+    fetch('images.txt')
+    .then(response => response.text())
+    .then(data => {
+        const imageNames = data.trim().split(/\r?\n/);
+        const basePath = '/<repository-name>/images/'; // Adjust this path as needed
 
-        // Shuffle the array of image links
-        for (let i = imageLinks.length - 1; i > 0; i--) {
+        // Shuffle the array of image names
+        for (let i = imageNames.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [imageLinks[i], imageLinks[j]] = [imageLinks[j], imageLinks[i]];
+            [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
         }
 
         // Append images in randomized order
-        imageLinks.forEach(src => {
+        imageNames.forEach(name => {
             const a = document.createElement('a');
-            a.href = src;
-            a.target = '_blank';
-
             const img = document.createElement('img');
-            img.src = src;
-            img.alt = src.split('/').pop();
-
+            img.src = `${basePath}${name}`;
+            img.alt = name;
+            a.href = img.src;
+            a.target = '_blank';
             a.appendChild(img);
             gallery.appendChild(a);
         });
     })
     .catch(error => {
-        console.error('Error fetching images:', error);
+        console.error('Error fetching image list:', error);
         const errorMsg = document.createElement('p');
-        errorMsg.textContent = 'Failed to load images. Please check the console for errors or ensure you are running this from a server.';
+        errorMsg.textContent = 'Failed to load image list. Please check the console for errors.';
         gallery.appendChild(errorMsg);
     });
 });
