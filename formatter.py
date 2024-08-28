@@ -1,8 +1,8 @@
 '''
 This script:
 1. Changes image names in the `/images` folder into a hash.
-2. Convert those .png images into .jpg and save in `/jpg`
-3. Saves a list of all images in `images.txt` for the browser to fetch.
+2. Converts .png images into .jpg and saves them in `/jpg`.
+3. Renames any existing .png images to match the new .jpg names (except file extension).
 '''
 
 import os
@@ -33,36 +33,28 @@ def process_images(directory):
             if os.path.isfile(filepath):
                 name, ext = os.path.splitext(filename)
                 
-                # Skip if already processed or not a PNG we're interested in
-                if len(name) == 10 and all(c in '0123456789abcdef' for c in name) or ext.lower() != '.png':
+                if ext.lower() in ['.png', '.jpg']:
+                    file_hash = hash_file(filepath)
+                    new_jpg_filename = f"{file_hash}.jpg"
+                    
                     if ext.lower() == '.png':
-                        # Check if JPG counterpart exists
-                        if not os.path.exists(os.path.join(jpg_dir, f"{name}.jpg")):
-                            convert_png_to_jpg(filepath, jpg_dir, name)
-                        log.write(f"{name}.jpg\n")
-                    else:
-                        log.write(f"{filename}\n")
-                    continue
-                
-                file_hash = hash_file(filepath)
-                new_name = f"{file_hash}"
-                
-                if ext.lower() == '.png':
-                    jpg_path = os.path.join(jpg_dir, f"{new_name}.jpg")
-                    if not os.path.exists(jpg_path):
-                        convert_png_to_jpg(filepath, jpg_dir, new_name)
-                    log.write(f"{new_name}.jpg  # Converted from {filename}\n")
-                    print(f'Converted: {filename} to {new_name}.jpg')
-                else:
-                    # For non-PNG files, just rename
-                    new_filename = f"{new_name}{ext}"
-                    new_filepath = os.path.join(directory, new_filename)
-                    if filepath != new_filepath:
-                        shutil.move(filepath, new_filepath)
-                        log.write(f"{new_filename}  # Renamed from {filename}\n")
-                        print(f'Renamed: {filename} to {new_name}{ext}')
-                    else:
-                        log.write(f"{filename}\n")
+                        # Convert PNG to JPG
+                        new_jpg_path = os.path.join(jpg_dir, new_jpg_filename)
+                        convert_png_to_jpg(filepath, jpg_dir, file_hash)
+
+                        # Rename the original PNG to a hashed name for consistency
+                        new_png_path = os.path.join(directory, f"{file_hash}{ext}")
+                        if filepath != new_png_path:
+                            shutil.move(filepath, new_png_path)
+                    
+                    elif ext.lower() == '.jpg':
+                        # Rename JPG with the hashed name
+                        new_jpg_path = os.path.join(jpg_dir, new_jpg_filename)
+                        if filepath != new_jpg_path:
+                            shutil.move(filepath, new_jpg_path)
+                    
+                    # Log only the new .jpg filename
+                    log.write(f"{new_jpg_filename}\n")
 
 def convert_png_to_jpg(png_path, jpg_dir, name):
     with Image.open(png_path) as img:
