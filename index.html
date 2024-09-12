@@ -36,7 +36,7 @@
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0;
+            gap: 8px; /* Adjusted gap between images */
             max-width: 1200px;
             width: 100%;
             padding: 0;
@@ -44,7 +44,7 @@
         }
         .gallery a {
             width: 100%;
-            padding-top: 100%;
+            padding-top: 100%; /* Maintains aspect ratio */
             position: relative;
             display: block;
         }
