@@ -14,7 +14,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
         }
         h1 {
             margin: 20px 0 10px 0;
@@ -43,6 +42,12 @@
             padding: 0;
             box-sizing: border-box;
         }
+        .gallery a {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            display: block;
+        }
         .gallery img {
             position: absolute;
             top: 0;
@@ -68,24 +73,6 @@
         footer a:hover {
             text-decoration: underline;
         }
-        /* Added styles for the image popup */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: none; /* Hidden by default */
-            justify-content: center;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-            z-index: 1000; /* Make sure it's on top */
-        }
-        .modal img {
-            max-width: 90%; /* Maximum image width */
-            max-height: 90%; /* Maximum image height */
-            box-shadow: 0 0 20px #ffffff; /* Optional: add shadow for better visibility */
-        }
     </style>
 </head>
 <body>
@@ -97,11 +84,6 @@
     <!-- Images will be dynamically inserted here -->
 </div>
 
-<!-- Modal for displaying the clicked image -->
-<div class="modal" id="modal">
-    <img src="" alt="Enlarged view" id="modal-img">
-</div>
-
 <footer>
     Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
 </footer>
@@ -109,8 +91,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const gallery = document.getElementById('gallery');
-    const modal = document.getElementById('modal');
-    const modalImg = document.getElementById('modal-img');
 
     fetch('images.txt')
     .then(response => response.text())
@@ -126,15 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Append images in randomized order
         imageNames.forEach((name, index) => {
+            const a = document.createElement('a');
             const img = document.createElement('img');
             img.src = `${basePath}${name}`;
             img.alt = name;
             img.loading = index < 6 ? "eager" : "lazy"; // Prioritize loading for the first few images
-            img.addEventListener('click', function() {
-                modalImg.src = this.src;
-                modal.style.display = 'flex'; // Show the modal
-            });
-            gallery.appendChild(img);
+            a.href = img.src;
+            a.target = '_blank';
+            a.appendChild(img);
+            gallery.appendChild(a);
         });
     })
     .catch(error => {
@@ -142,13 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorMsg = document.createElement('p');
         errorMsg.textContent = 'Failed to load image list. Please check the console for errors.';
         gallery.appendChild(errorMsg);
-    });
-
-    // Close the modal if outside of image is clicked
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.style.display = 'none';
-        }
     });
 });
 </script>
