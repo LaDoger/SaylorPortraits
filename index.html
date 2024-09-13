@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.text())
     .then(data => {
         const imageNames = data.trim().split(/\r?\n/);
-        const basePath = 'https://ladoger.github.io/SaylorPortraits/jpg/'; // Adjust this path as needed
+        const basePath = 'https://ladoger.github.io/SaylorPortraits/jpg/';
 
         // Shuffle the array of image names
         for (let i = imageNames.length - 1; i > 0; i--) {
@@ -136,10 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = document.createElement('img');
             img.src = `${basePath}${name}`;
             img.alt = name;
-            img.loading = index < 6 ? "eager" : "lazy"; // Prioritize loading for the first few images
+            img.loading = index < 6 ? "eager" : "lazy";
             img.addEventListener('click', function() {
                 modalImg.src = this.src;
-                modal.style.display = 'flex'; // Show the modal
+                modal.style.display = 'flex';
             });
             div.appendChild(img);
             gallery.appendChild(div);
@@ -152,10 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
         gallery.appendChild(errorMsg);
     });
 
-    // Close the modal if outside of image is clicked
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.style.display = 'none';
+    // Click anywhere on the modal to close it
+    modal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    // Press "Esc" to close the modal
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            modal.style.display = 'none';
         }
     });
 });
