@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saylor Portraits</title>
-    <link rel="icon" href="https://ladoger.github.io/SaylorPortraits/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Adding Google Fonts link for Open Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
@@ -42,39 +42,36 @@
             width: 100%;
             display: flex;
             justify-content: center;
+            margin-bottom: -1px; /* Overlap with gallery */
         }
         .tabs {
             display: flex;
-            position: absolute;
-            top: 0;
+            /* No need for absolute positioning */
             /* Adjust as needed to overlap with the gallery */
-            transform: translateY(-50%);
         }
         .tab-button {
             background-color: #333;
             color: white;
             padding: 10px 20px;
             margin: 0 -5px; /* Negative margin to overlap tabs */
-            border: none;
+            border: 1px solid #333;
             cursor: pointer;
             outline: none;
             font-size: 1em;
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
             position: relative;
+            z-index: 2; /* Ensure tabs are above the gallery */
         }
         .tab-button:not(:first-child) {
             margin-left: -1px; /* Overlap borders */
         }
         .tab-button.active {
             background-color: #F2A900;
+            border-bottom: 1px solid transparent; /* Hide bottom border */
         }
         .tab-button:hover {
             background-color: #555;
-        }
-        /* Optional: Adjust z-index to bring active tab to front */
-        .tab-button.active {
-            z-index: 2;
         }
         .gallery-container {
             position: relative;
@@ -90,6 +87,8 @@
             padding: 0;
             margin-top: 0; /* Remove any top margin */
             box-sizing: border-box;
+            position: relative;
+            z-index: 1; /* Ensure gallery is below tabs */
         }
         .gallery div {
             position: relative;
@@ -195,46 +194,83 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalImg = document.getElementById('modal-img');
     const tabButtons = document.querySelectorAll('.tab-button');
 
-    // Function to load images from a specific folder and adjust the grid
+    // Object to store images for each category
+    const imageData = {};
+
+    // Function to fetch and shuffle images for each folder
+    function fetchAndStoreImages(folder) {
+        return fetch(`${folder}/images.txt`)
+            .then(response => response.text())
+            .then(data => {
+                let imageNames = data.trim().split(/\r?\n/);
+
+                // Shuffle the array of image names only once
+                for (let i = imageNames.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
+                }
+
+                // Store the shuffled images in the imageData object
+                imageData[folder] = imageNames;
+            })
+            .catch(error => {
+                console.error(`Error fetching image list from ${folder}:`, error);
+                imageData[folder] = []; // Set to empty array on error
+            });
+    }
+
+    // Fetch images for all folders on page load
+    Promise.all([
+        fetchAndStoreImages('square'),
+        fetchAndStoreImages('landscape'),
+        fetchAndStoreImages('vertical')
+    ]).then(() => {
+        // After all images are fetched, load the default tab
+        loadImages('square', 3); // Default tab: square with 3 columns
+    });
+
+    // Function to load images from stored data and adjust the grid
     function loadImages(folder, columns) {
         gallery.innerHTML = ''; // Clear the existing images
         gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // Adjust columns
 
-        // Adjust the basePath to point to the correct folder
+        // Adjust gallery classes based on folder
+        if (folder === 'square') {
+            gallery.classList.remove('full-image');
+            gallery.classList.remove('one-column');
+        } else if (folder === 'landscape') {
+            gallery.classList.add('full-image');
+            gallery.classList.add('one-column');
+        } else if (folder === 'vertical') {
+            gallery.classList.add('full-image');
+            gallery.classList.remove('one-column');
+        }
+
         const basePath = `${folder}/`;
+        const imageNames = imageData[folder];
 
-        // Fetch the images.txt file from the specified folder
-        fetch(`${folder}/images.txt`)
-        .then(response => response.text())
-        .then(data => {
-            const imageNames = data.trim().split(/\r?\n/);
-
-            // Shuffle the array of image names
-            for (let i = imageNames.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
-            }
-
-            // Append images in randomized order
-            imageNames.forEach((name, index) => {
-                const div = document.createElement('div');
-                const img = document.createElement('img');
-                img.src = `${basePath}${name}`;
-                img.alt = name;
-                img.loading = index < 6 ? "eager" : "lazy";
-                img.addEventListener('click', function() {
-                    modalImg.src = this.src;
-                    modal.style.display = 'flex';
-                });
-                div.appendChild(img);
-                gallery.appendChild(div);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching image list:', error);
+        if (!imageNames || imageNames.length === 0) {
             const errorMsg = document.createElement('p');
-            errorMsg.textContent = 'Failed to load image list. Please check the console for errors.';
+            errorMsg.textContent = 'No images found in this category.';
+            errorMsg.style.color = 'white';
+            errorMsg.style.textAlign = 'center';
             gallery.appendChild(errorMsg);
+            return;
+        }
+
+        // Append images in the stored order
+        imageNames.forEach((name, index) => {
+            const div = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = `${basePath}${name}`;
+            img.alt = name;
+            img.loading = index < 6 ? "eager" : "lazy";
+            img.addEventListener('click', function() {
+                modalImg.src = this.src;
+                modal.style.display = 'flex';
+            });
+            div.appendChild(img);
+            gallery.appendChild(div);
         });
     }
 
@@ -249,25 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const tab = this.dataset.tab;
             if (tab === 'square') {
                 loadImages('square', 3); // 3 columns
-                // Apply square aspect ratio styling
-                gallery.classList.remove('full-image');
-                gallery.classList.remove('one-column');
             } else if (tab === 'landscape') {
                 loadImages('landscape', 1); // 1 column
-                // Apply full image styling
-                gallery.classList.add('full-image');
-                gallery.classList.add('one-column');
             } else if (tab === 'vertical') {
                 loadImages('vertical', 3); // 3 columns
-                // Apply full image styling
-                gallery.classList.add('full-image');
-                gallery.classList.remove('one-column');
             }
         });
     });
-
-    // Initial load: Load images from the 'square' folder
-    loadImages('square', 3); // Default tab: square with 3 columns
 
     // Click anywhere on the modal to close it
     modal.addEventListener('click', function() {
