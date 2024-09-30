@@ -1,8 +1,9 @@
 '''
 This script:
 1. Changes image names in the `/images` folder into a hash.
-2. Converts .png images into .jpg and saves them in `/jpg`.
-3. Renames any existing .png images to match the new .jpg names (except file extension).
+2. Determines the aspect ratio of each image and places them into `/square`, `/landscape`, or `/vertical` folders.
+3. Converts .png images into .jpg format.
+4. Generates `images.txt` files in each of the folders listing the image filenames.
 '''
 
 import os
@@ -20,47 +21,80 @@ def hash_file(filepath, blocksize=65536):
     return hasher.hexdigest()[:10]
 
 def process_images(directory):
-    log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images.txt')
     parent_dir = os.path.dirname(directory)
-    jpg_dir = os.path.join(parent_dir, 'jpg')
-    
-    if not os.path.exists(jpg_dir):
-        os.makedirs(jpg_dir)
-    
-    with open(log_file_path, 'w') as log:
-        for filename in os.listdir(directory):
-            filepath = os.path.join(directory, filename)
-            if os.path.isfile(filepath):
-                name, ext = os.path.splitext(filename)
-                
-                if ext.lower() in ['.png', '.jpg']:
-                    file_hash = hash_file(filepath)
-                    new_jpg_filename = f"{file_hash}.jpg"
-                    
+    square_dir = os.path.join(parent_dir, 'square')
+    landscape_dir = os.path.join(parent_dir, 'landscape')
+    vertical_dir = os.path.join(parent_dir, 'vertical')
+
+    # Ensure the output directories exist
+    os.makedirs(square_dir, exist_ok=True)
+    os.makedirs(landscape_dir, exist_ok=True)
+    os.makedirs(vertical_dir, exist_ok=True)
+
+    # Prepare lists to hold image filenames for each category
+    square_images = []
+    landscape_images = []
+    vertical_images = []
+
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            name, ext = os.path.splitext(filename)
+
+            if ext.lower() in ['.png', '.jpg', '.jpeg']:
+                file_hash = hash_file(filepath)
+                new_filename = f"{file_hash}"
+
+                # Open the image to get its dimensions
+                with Image.open(filepath) as img:
+                    width, height = img.size
+
+                    # Determine aspect ratio category
+                    if width == height:
+                        aspect = 'square'
+                        img_dir = square_dir
+                        image_list = square_images
+                    elif width > height:
+                        aspect = 'landscape'
+                        img_dir = landscape_dir
+                        image_list = landscape_images
+                    else:
+                        aspect = 'vertical'
+                        img_dir = vertical_dir
+                        image_list = vertical_images
+
+                    new_jpg_filename = f"{new_filename}.jpg"
+                    new_jpg_path = os.path.join(img_dir, new_jpg_filename)
+
+                    # Convert to JPG if necessary
                     if ext.lower() == '.png':
                         # Convert PNG to JPG
-                        new_jpg_path = os.path.join(jpg_dir, new_jpg_filename)
-                        convert_png_to_jpg(filepath, jpg_dir, file_hash)
-
-                        # Rename the original PNG to a hashed name for consistency
-                        new_png_path = os.path.join(directory, f"{file_hash}{ext}")
+                        rgb_img = img.convert('RGB')
+                        rgb_img.save(new_jpg_path, 'JPEG', quality=80)
+                        # Rename the original PNG to hashed name (maintain in the images folder)
+                        new_png_filename = f"{new_filename}.png"
+                        new_png_path = os.path.join(directory, new_png_filename)
                         if filepath != new_png_path:
-                            shutil.move(filepath, new_png_path)
-                    
-                    elif ext.lower() == '.jpg':
-                        # Rename JPG with the hashed name
-                        new_jpg_path = os.path.join(jpg_dir, new_jpg_filename)
+                            os.rename(filepath, new_png_path)
+                    else:
+                        # Save the JPG in the appropriate directory
                         if filepath != new_jpg_path:
-                            shutil.move(filepath, new_jpg_path)
-                    
-                    # Log only the new .jpg filename
-                    log.write(f"{new_jpg_filename}\n")
+                            shutil.copy2(filepath, new_jpg_path)
+                        # Rename the original JPG to hashed name (maintain in the images folder)
+                        new_jpg_original_path = os.path.join(directory, f"{new_filename}{ext.lower()}")
+                        if filepath != new_jpg_original_path:
+                            os.rename(filepath, new_jpg_original_path)
 
-def convert_png_to_jpg(png_path, jpg_dir, name):
-    with Image.open(png_path) as img:
-        rgb_img = img.convert('RGB')
-        jpg_path = os.path.join(jpg_dir, f"{name}.jpg")
-        rgb_img.save(jpg_path, 'JPEG', quality=80)
+                    # Add the new jpg filename to the appropriate list
+                    image_list.append(new_jpg_filename)
+
+    # Write the images.txt files in each directory
+    for dir_path, images in zip([square_dir, landscape_dir, vertical_dir],
+                                [square_images, landscape_images, vertical_images]):
+        images_txt_path = os.path.join(dir_path, 'images.txt')
+        with open(images_txt_path, 'w') as f:
+            for img_name in images:
+                f.write(f"{img_name}\n")
 
 # Directory where images are stored
 image_dir = os.path.join(os.getcwd(), "images")

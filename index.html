@@ -36,6 +36,26 @@
             color: #F2A900;
             text-decoration: none;
         }
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+        .tab-button.active, .tab-button:hover {
+            background-color: #F2A900;
+        }
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -94,12 +114,34 @@
             max-height: 90%; /* Maximum image height */
             box-shadow: 0 0 20px #ffffff; /* Optional: add shadow for better visibility */
         }
+        /* Styles for full image display */
+        .gallery.full-image div {
+            padding-top: initial;
+        }
+        .gallery.full-image img {
+            position: static;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            transform: none;
+        }
+        /* Styles for one-column layout */
+        .gallery.one-column {
+            grid-template-columns: 1fr;
+        }
     </style>
 </head>
 <body>
 
 <h1>Saylor Portraits</h1>
 <h2>These amazing <a href="https://x.com/saylor/status/1825868178582274236"><b>Michael Saylor</b></a> portraits<br>made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> are meant to<br>be spread and used everywhere!<br><b>Use them well.</b></h2>
+
+<!-- Tabs for switching between image categories -->
+<div class="tabs">
+    <button class="tab-button active" data-tab="square">Square</button>
+    <button class="tab-button" data-tab="landscape">Landscape</button>
+    <button class="tab-button" data-tab="vertical">Vertical</button>
+</div>
 
 <div class="gallery" id="gallery">
     <!-- Images will be dynamically inserted here -->
@@ -119,40 +161,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const gallery = document.getElementById('gallery');
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modal-img');
+    const tabButtons = document.querySelectorAll('.tab-button');
 
-    fetch('images.txt')
-    .then(response => response.text())
-    .then(data => {
-        const imageNames = data.trim().split(/\r?\n/);
-        const basePath = 'https://ladoger.github.io/SaylorPortraits/jpg/';
+    // Function to load images from a specific folder and adjust the grid
+    function loadImages(folder, columns) {
+        gallery.innerHTML = ''; // Clear the existing images
+        gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // Adjust columns
 
-        // Shuffle the array of image names
-        for (let i = imageNames.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
-        }
+        // Adjust the basePath to point to the correct folder
+        const basePath = `${folder}/`;
 
-        // Append images in randomized order
-        imageNames.forEach((name, index) => {
-            const div = document.createElement('div');
-            const img = document.createElement('img');
-            img.src = `${basePath}${name}`;
-            img.alt = name;
-            img.loading = index < 6 ? "eager" : "lazy";
-            img.addEventListener('click', function() {
-                modalImg.src = this.src;
-                modal.style.display = 'flex';
+        // Fetch the images.txt file from the specified folder
+        fetch(`${folder}/images.txt`)
+        .then(response => response.text())
+        .then(data => {
+            const imageNames = data.trim().split(/\r?\n/);
+
+            // Shuffle the array of image names
+            for (let i = imageNames.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
+            }
+
+            // Append images in randomized order
+            imageNames.forEach((name, index) => {
+                const div = document.createElement('div');
+                const img = document.createElement('img');
+                img.src = `${basePath}${name}`;
+                img.alt = name;
+                img.loading = index < 6 ? "eager" : "lazy";
+                img.addEventListener('click', function() {
+                    modalImg.src = this.src;
+                    modal.style.display = 'flex';
+                });
+                div.appendChild(img);
+                gallery.appendChild(div);
             });
-            div.appendChild(img);
-            gallery.appendChild(div);
+        })
+        .catch(error => {
+            console.error('Error fetching image list:', error);
+            const errorMsg = document.createElement('p');
+            errorMsg.textContent = 'Failed to load image list. Please check the console for errors.';
+            gallery.appendChild(errorMsg);
         });
-    })
-    .catch(error => {
-        console.error('Error fetching image list:', error);
-        const errorMsg = document.createElement('p');
-        errorMsg.textContent = 'Failed to load image list. Please check the console for errors.';
-        gallery.appendChild(errorMsg);
+    }
+
+    // Add event listeners to the tab buttons
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove the 'active' class from all buttons
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            // Add the 'active' class to the clicked button
+            this.classList.add('active');
+
+            const tab = this.dataset.tab;
+            if (tab === 'square') {
+                loadImages('square', 3); // 3 columns
+                // Apply square aspect ratio styling
+                gallery.classList.remove('full-image');
+                gallery.classList.remove('one-column');
+            } else if (tab === 'landscape') {
+                loadImages('landscape', 1); // 1 column
+                // Apply full image styling
+                gallery.classList.add('full-image');
+                gallery.classList.add('one-column');
+            } else if (tab === 'vertical') {
+                loadImages('vertical', 3); // 3 columns
+                // Apply full image styling
+                gallery.classList.add('full-image');
+                gallery.classList.remove('one-column');
+            }
+        });
     });
+
+    // Initial load: Load images from the 'square' folder
+    loadImages('square', 3); // Default tab: square with 3 columns
 
     // Click anywhere on the modal to close it
     modal.addEventListener('click', function() {
