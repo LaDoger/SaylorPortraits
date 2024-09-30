@@ -59,7 +59,7 @@
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
+            gap: 2px; /* Adjusted gap as per your code */
             max-width: 1200px;
             width: 100%;
             padding: 0;
@@ -117,6 +117,7 @@
         /* Styles for full image display */
         .gallery.full-image div {
             padding-top: initial;
+            line-height: 0; /* Added to remove any extra space */
         }
         .gallery.full-image img {
             position: static;
@@ -124,6 +125,7 @@
             height: auto;
             object-fit: contain;
             transform: none;
+            display: block; /* Added to remove extra space below images */
         }
         /* Styles for one-column layout */
         .gallery.one-column {
