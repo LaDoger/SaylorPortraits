@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- [Unchanged head content] -->
+    <!-- Head content remains unchanged -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saylor Portraits</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Adding Google Fonts link for Open Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         /* Base styles */
         body {
@@ -45,7 +46,6 @@
             margin: 0 auto; /* Center the tabs */
             display: flex;
             justify-content: center;
-            margin-bottom: 0; /* Adjust as needed */
             box-sizing: border-box;
         }
         .tabs {
@@ -55,15 +55,18 @@
         }
         .tab-button {
             flex: 1; /* Each tab takes equal space */
-            background-color: #333;
+            background-color: #333333; /* Dark Grey */
             color: white;
             padding: 10px 0; /* Adjust vertical padding as needed */
             margin: 0 1px; /* 2px gap between tabs (1px on each side) */
-            border: none;
             cursor: pointer;
             outline: none;
             font-size: 1em;
             box-sizing: border-box;
+            font-weight: bold; /* Make text bold */
+            border: none;
+            border-top-left-radius: 10px; /* Rounded top corners */
+            border-top-right-radius: 10px;
         }
         .tab-button:first-child {
             margin-left: 0;
@@ -72,25 +75,25 @@
             margin-right: 0;
         }
         .tab-button.active {
-            background-color: #F2A900;
+            background-color: #555555; /* Lighter Dark Grey */
         }
         .tab-button:hover {
-            background-color: #555;
+            background-color: #555555; /* Same as active tab color */
         }
         /* Adjust gallery-container to align with tabs */
         .gallery-container {
             width: 100%;
             max-width: 1200px;
             box-sizing: border-box;
-            padding-top: 2px; /* Add gap between tabs and images (matching gap between images) */
         }
+        /* Add 2px gap between tabs and gallery */
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2px;
             width: 100%;
             padding: 0;
-            margin-top: 0; /* Remove any top margin */
+            margin-top: 2px; /* Add 2px gap between tabs and images */
             box-sizing: border-box;
         }
         .gallery div {
@@ -135,7 +138,7 @@
             justify-content: center;
             align-items: center;
             background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-            z-index: 1000; /* Make sure it's on top */
+            z-index: 1000; /* Ensure it's on top */
         }
         .modal img {
             max-width: 90%; /* Maximum image width */
@@ -145,7 +148,7 @@
         /* Styles for full image display */
         .gallery.full-image div {
             padding-top: initial;
-            line-height: 0; /* Added to remove any extra space */
+            line-height: 0; /* Remove any extra space */
         }
         .gallery.full-image img {
             position: static;
@@ -153,7 +156,7 @@
             height: auto;
             object-fit: contain;
             transform: none;
-            display: block; /* Added to remove extra space below images */
+            display: block; /* Remove extra space below images */
         }
         /* Styles for one-column layout */
         .gallery.one-column {
@@ -190,6 +193,7 @@
     Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
 </footer>
 
+<!-- JavaScript code remains unchanged -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const gallery = document.getElementById('gallery');
@@ -286,6 +290,7 @@
                 this.classList.add('active');
 
                 const tab = this.dataset.tab;
+
                 if (tab === 'square') {
                     loadImages('square', 3); // 3 columns
                 } else if (tab === 'landscape') {
