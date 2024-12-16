@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Head content remains unchanged -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saylor Portraits</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <!-- Adding Google Fonts link for Open Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 
     <meta property="og:title" content="Saylor Portraits">
@@ -57,7 +55,7 @@
         .tabs-container {
             width: 100%;
             max-width: 1200px;
-            margin: 0 auto; /* Center the tabs */
+            margin: 0 auto;
             display: flex;
             justify-content: center;
             box-sizing: border-box;
@@ -68,18 +66,18 @@
             box-sizing: border-box;
         }
         .tab-button {
-            flex: 1; /* Each tab takes equal space */
-            background-color: #333333; /* Dark Grey */
+            flex: 1;
+            background-color: #333333;
             color: white;
-            padding: 10px 0; /* Adjust vertical padding as needed */
-            margin: 0 1px; /* 2px gap between tabs (1px on each side) */
+            padding: 10px 0;
+            margin: 0 1px;
             cursor: pointer;
             outline: none;
             font-size: 1em;
             box-sizing: border-box;
-            font-weight: bold; /* Make text bold */
+            font-weight: bold;
             border: none;
-            border-top-left-radius: 10px; /* Rounded top corners */
+            border-top-left-radius: 10px;
             border-top-right-radius: 10px;
         }
         .tab-button:first-child {
@@ -89,31 +87,29 @@
             margin-right: 0;
         }
         .tab-button.active {
-            background-color: #555555; /* Lighter Dark Grey */
+            background-color: #555555;
         }
         .tab-button:hover {
-            background-color: #555555; /* Same as active tab color */
+            background-color: #555555;
         }
-        /* Adjust gallery-container to align with tabs */
         .gallery-container {
             width: 100%;
             max-width: 1200px;
             box-sizing: border-box;
         }
-        /* Add 2px gap between tabs and gallery */
         .gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2px;
             width: 100%;
             padding: 0;
-            margin-top: 2px; /* Add 2px gap between tabs and images */
+            margin-top: 2px;
             box-sizing: border-box;
         }
         .gallery div {
             position: relative;
             width: 100%;
-            padding-top: 100%; /* Keeps the aspect ratio 1:1 */
+            padding-top: 100%;
             overflow: hidden;
         }
         .gallery img, .gallery video {
@@ -141,51 +137,46 @@
         footer a:hover {
             text-decoration: underline;
         }
-        /* Added styles for the image popup */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: center;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
-            z-index: 1000; /* Ensure it's on top */
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
         }
-        .modal img {
-            max-width: 90%; /* Maximum image width */
-            max-height: 90%; /* Maximum image height */
-            box-shadow: 0 0 20px #ffffff; /* Optional: add shadow for better visibility */
+        .modal img, .modal video {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 20px #ffffff;
         }
-        /* Styles for full image display */
         .gallery.full-image div {
             padding-top: initial;
-            line-height: 0; /* Remove any extra space */
+            line-height: 0;
         }
-        .gallery.full-image img {
+        .gallery.full-image img, .gallery.full-image video {
             position: static;
             width: 100%;
             height: auto;
             object-fit: contain;
             transform: none;
-            display: block; /* Remove extra space below images */
+            display: block;
         }
-        /* Styles for one-column layout */
         .gallery.one-column {
             grid-template-columns: 1fr;
         }
     </style>
 </head>
 
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-PFS6XG5M9V"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-PFS6XG5M9V');
 </script>
 
@@ -195,7 +186,6 @@
 <h2>These amazing <a href="https://x.com/saylor/status/1825868178582274236"><b>Michael Saylor</b></a> portraits<br>made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> are meant to<br>be spread and used everywhere!<br><b>Use them well.</b></h2>
 
 <div class="gallery-container">
-    <!-- Tabs for switching between image categories -->
     <div class="tabs-container">
         <div class="tabs">
             <button class="tab-button active" data-tab="square">Square</button>
@@ -206,150 +196,166 @@
     </div>
 
     <div class="gallery" id="gallery">
-        <!-- Images or videos will be dynamically inserted here -->
     </div>
 </div>
 
-<!-- Modal for displaying the clicked image -->
 <div class="modal" id="modal">
-    <img src="" alt="Enlarged view" id="modal-img">
+    <div id="modal-content"></div>
 </div>
 
 <footer>
     Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
 </footer>
 
-<!-- JavaScript code -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const gallery = document.getElementById('gallery');
         const modal = document.getElementById('modal');
-        const modalImg = document.getElementById('modal-img');
+        const modalContent = document.getElementById('modal-content');
         const tabButtons = document.querySelectorAll('.tab-button');
 
-        // Object to store media (images or videos) for each category
-        const mediaData = {};
+        const imageData = {};
+        const videoData = [];
 
-        // Function to fetch and shuffle media for each folder
-        function fetchAndStoreMedia(folder, key) {
+        function fetchAndStoreImages(folder) {
             return fetch(`${folder}/images.txt`)
                 .then(response => response.text())
                 .then(data => {
-                    let mediaNames = data.trim().split(/\r?\n/);
-
-                    // Shuffle the array of media names only once
-                    for (let i = mediaNames.length - 1; i > 0; i--) {
+                    let imageNames = data.trim().split(/\r?\n/);
+                    for (let i = imageNames.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
-                        [mediaNames[i], mediaNames[j]] = [mediaNames[j], mediaNames[i]];
+                        [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
                     }
-
-                    // Store the shuffled media in the mediaData object
-                    mediaData[key] = mediaNames;
+                    imageData[folder] = imageNames;
                 })
                 .catch(error => {
-                    console.error(`Error fetching media list from ${folder}:`, error);
-                    mediaData[key] = []; // Set to empty array on error
+                    console.error(`Error fetching image list from ${folder}:`, error);
+                    imageData[folder] = [];
                 });
         }
 
-        // Fetch media for all folders on page load
+        function fetchAndStoreVideos() {
+            return fetch('videos/videos.txt')
+                .then(response => response.text())
+                .then(data => {
+                    videoData.length = 0;
+                    videoData.push(...data.trim().split(/\r?\n/));
+                })
+                .catch(error => {
+                    console.error('Error fetching video list:', error);
+                });
+        }
+
         Promise.all([
-            fetchAndStoreMedia('square', 'square'),
-            fetchAndStoreMedia('landscape', 'landscape'),
-            fetchAndStoreMedia('vertical', 'vertical'),
-            fetchAndStoreMedia('videos', 'talking')
+            fetchAndStoreImages('square'),
+            fetchAndStoreImages('landscape'),
+            fetchAndStoreImages('vertical'),
+            fetchAndStoreVideos()
         ]).then(() => {
-            // After all media are fetched, load the default tab
-            loadMedia('square', 3); // Default tab: square with 3 columns
+            loadImages('square', 3);
         });
 
-        // Function to load media from stored data and adjust the grid
-        function loadMedia(tab, columns) {
-            gallery.innerHTML = ''; // Clear the existing media
-            gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // Adjust columns
+        function loadImages(folder, columns) {
+            gallery.innerHTML = '';
+            gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
-            // Adjust gallery classes based on tab
-            if (tab === 'square' || tab === 'talking') {
-                gallery.classList.remove('full-image');
-                gallery.classList.remove('one-column');
-            } else if (tab === 'landscape') {
+            if (folder === 'square') {
+                gallery.classList.remove('full-image', 'one-column');
+                loadImageContent('square');
+            } else if (folder === 'landscape') {
+                gallery.classList.add('full-image', 'one-column');
+                loadImageContent('landscape');
+            } else if (folder === 'vertical') {
                 gallery.classList.add('full-image');
-                gallery.classList.add('one-column');
-            } else if (tab === 'vertical') {
-                gallery.classList.add('full-image');
                 gallery.classList.remove('one-column');
+                loadImageContent('vertical');
+            } else if (folder === 'talking') {
+                gallery.classList.remove('full-image', 'one-column');
+                loadVideoContent();
             }
+        }
 
-            const basePath = tab === 'talking' ? `videos/` : `${tab}/`;
-            const mediaNames = mediaData[tab];
+        function loadImageContent(folder) {
+            const basePath = `${folder}/`;
+            const imageNames = imageData[folder];
 
-            if (!mediaNames || mediaNames.length === 0) {
+            if (!imageNames || imageNames.length === 0) {
                 const errorMsg = document.createElement('p');
-                errorMsg.textContent = 'No media found in this category.';
+                errorMsg.textContent = 'No images found in this category.';
                 errorMsg.style.color = 'white';
                 errorMsg.style.textAlign = 'center';
                 gallery.appendChild(errorMsg);
                 return;
             }
 
-            // Append images or videos based on tab
-            mediaNames.forEach((name, index) => {
+            imageNames.forEach((name, index) => {
                 const div = document.createElement('div');
-                if (tab === 'talking') {
-                    const video = document.createElement('video');
-                    video.src = `${basePath}${name}`;
-                    video.controls = true;
-                    video.preload = index < 6 ? "auto" : "metadata";
-                    video.addEventListener('click', function(event) {
-                        event.stopPropagation(); // Prevent modal from opening
-                    });
-                    div.appendChild(video);
-                } else {
-                    const img = document.createElement('img');
-                    img.src = `${basePath}${name}`;
-                    img.alt = name;
-                    img.loading = index < 6 ? "eager" : "lazy";
-                    img.addEventListener('click', function() {
-                        modalImg.src = this.src;
-                        modal.style.display = 'flex';
-                    });
-                    div.appendChild(img);
-                }
+                const img = document.createElement('img');
+                img.src = `${basePath}${name}`;
+                img.alt = name;
+                img.loading = index < 6 ? "eager" : "lazy";
+                img.addEventListener('click', function() {
+                    modalContent.innerHTML = `<img src="${this.src}" alt="${this.alt}">`;
+                    modal.style.display = 'flex';
+                });
+                div.appendChild(img);
                 gallery.appendChild(div);
             });
         }
 
-        // Add event listeners to the tab buttons
+        function loadVideoContent() {
+            if (!videoData || videoData.length === 0) {
+                const errorMsg = document.createElement('p');
+                errorMsg.textContent = 'No videos found.';
+                errorMsg.style.color = 'white';
+                errorMsg.style.textAlign = 'center';
+                gallery.appendChild(errorMsg);
+                return;
+            }
+
+            videoData.forEach((name, index) => {
+                const div = document.createElement('div');
+                const video = document.createElement('video');
+                video.src = `videos/${name}`;
+                video.controls = true;
+                video.loop = true;
+                video.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    modalContent.innerHTML = `
+                        <video src="${this.src}" controls loop style="max-width: 90vw; max-height: 90vh;"></video>
+                    `;
+                    modal.style.display = 'flex';
+                });
+                div.appendChild(video);
+                gallery.appendChild(div);
+            });
+        }
+
         tabButtons.forEach(button => {
             button.addEventListener('click', function() {
-                // Remove the 'active' class from all buttons
                 tabButtons.forEach(btn => btn.classList.remove('active'));
-                // Add the 'active' class to the clicked button
                 this.classList.add('active');
 
                 const tab = this.dataset.tab;
-
-                if (tab === 'square') {
-                    loadMedia('square', 3); // 3 columns
+                if (tab === 'talking') {
+                    loadImages('talking', 3);
                 } else if (tab === 'landscape') {
-                    loadMedia('landscape', 1); // 1 column
-                } else if (tab === 'vertical') {
-                    loadMedia('vertical', 3); // 3 columns
-                } else if (tab === 'talking') {
-                    loadMedia('talking', 3); // 3 columns
+                    loadImages('landscape', 1);
+                } else {
+                    loadImages(tab, 3);
                 }
             });
         });
 
-        // Click anywhere on the modal to close it
         modal.addEventListener('click', function() {
             modal.style.display = 'none';
+            modalContent.innerHTML = '';
         });
 
-        // Press "Esc" to close the modal
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
                 modal.style.display = 'none';
+                modalContent.innerHTML = '';
             }
         });
     });
