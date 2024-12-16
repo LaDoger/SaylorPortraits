@@ -3,7 +3,9 @@ This script:
 1. Changes image names in the `/images` folder into a hash.
 2. Determines the aspect ratio of each image and places them into `/square`, `/landscape`, or `/vertical` folders.
 3. Converts .png images into .jpg format.
-4. Generates `images.txt` files in each of the folders listing the image filenames.
+4. Generates `images.txt` files in each of the image folders listing the image filenames.
+5. Changes video names in the `/videos` folder into a hash.
+6. Generates `videos.txt` file in the `/videos` folder listing the video filenames.
 '''
 
 import os
@@ -96,8 +98,32 @@ def process_images(directory):
             for img_name in images:
                 f.write(f"{img_name}\n")
 
+def process_videos(directory):
+    video_list = []
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            name, ext = os.path.splitext(filename)
+            if ext.lower() == '.mp4':
+                file_hash = hash_file(filepath)
+                new_filename = f"{file_hash}.mp4"
+                new_path = os.path.join(directory, new_filename)
+                if filepath != new_path:
+                    os.rename(filepath, new_path)
+                video_list.append(new_filename)
+    
+    # Write the videos.txt file in the video directory
+    videos_txt_path = os.path.join(directory, 'videos.txt')
+    with open(videos_txt_path, 'w') as f:
+        for video_name in video_list:
+            f.write(f"{video_name}\n")
+
 # Directory where images are stored
 image_dir = os.path.join(os.getcwd(), "images")
+video_dir = os.path.join(os.getcwd(), "videos")
 
 # Process all images in the specified directory and log them
 process_images(image_dir)
+
+# Process all videos in the specified video directory
+process_videos(video_dir)

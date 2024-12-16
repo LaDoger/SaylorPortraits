@@ -116,7 +116,7 @@
             padding-top: 100%; /* Keeps the aspect ratio 1:1 */
             overflow: hidden;
         }
-        .gallery img {
+        .gallery img, .gallery video {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -201,11 +201,12 @@
             <button class="tab-button active" data-tab="square">Square</button>
             <button class="tab-button" data-tab="landscape">Landscape</button>
             <button class="tab-button" data-tab="vertical">Vertical</button>
+            <button class="tab-button" data-tab="talking">Talking</button>
         </div>
     </div>
 
     <div class="gallery" id="gallery">
-        <!-- Images will be dynamically inserted here -->
+        <!-- Images or videos will be dynamically inserted here -->
     </div>
 </div>
 
@@ -218,7 +219,7 @@
     Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
 </footer>
 
-<!-- JavaScript code remains unchanged -->
+<!-- JavaScript code -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const gallery = document.getElementById('gallery');
@@ -226,82 +227,94 @@
         const modalImg = document.getElementById('modal-img');
         const tabButtons = document.querySelectorAll('.tab-button');
 
-        // Object to store images for each category
-        const imageData = {};
+        // Object to store media (images or videos) for each category
+        const mediaData = {};
 
-        // Function to fetch and shuffle images for each folder
-        function fetchAndStoreImages(folder) {
+        // Function to fetch and shuffle media for each folder
+        function fetchAndStoreMedia(folder, key) {
             return fetch(`${folder}/images.txt`)
                 .then(response => response.text())
                 .then(data => {
-                    let imageNames = data.trim().split(/\r?\n/);
+                    let mediaNames = data.trim().split(/\r?\n/);
 
-                    // Shuffle the array of image names only once
-                    for (let i = imageNames.length - 1; i > 0; i--) {
+                    // Shuffle the array of media names only once
+                    for (let i = mediaNames.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
-                        [imageNames[i], imageNames[j]] = [imageNames[j], imageNames[i]];
+                        [mediaNames[i], mediaNames[j]] = [mediaNames[j], mediaNames[i]];
                     }
 
-                    // Store the shuffled images in the imageData object
-                    imageData[folder] = imageNames;
+                    // Store the shuffled media in the mediaData object
+                    mediaData[key] = mediaNames;
                 })
                 .catch(error => {
-                    console.error(`Error fetching image list from ${folder}:`, error);
-                    imageData[folder] = []; // Set to empty array on error
+                    console.error(`Error fetching media list from ${folder}:`, error);
+                    mediaData[key] = []; // Set to empty array on error
                 });
         }
 
-        // Fetch images for all folders on page load
+        // Fetch media for all folders on page load
         Promise.all([
-            fetchAndStoreImages('square'),
-            fetchAndStoreImages('landscape'),
-            fetchAndStoreImages('vertical')
+            fetchAndStoreMedia('square', 'square'),
+            fetchAndStoreMedia('landscape', 'landscape'),
+            fetchAndStoreMedia('vertical', 'vertical'),
+            fetchAndStoreMedia('videos', 'talking')
         ]).then(() => {
-            // After all images are fetched, load the default tab
-            loadImages('square', 3); // Default tab: square with 3 columns
+            // After all media are fetched, load the default tab
+            loadMedia('square', 3); // Default tab: square with 3 columns
         });
 
-        // Function to load images from stored data and adjust the grid
-        function loadImages(folder, columns) {
-            gallery.innerHTML = ''; // Clear the existing images
+        // Function to load media from stored data and adjust the grid
+        function loadMedia(tab, columns) {
+            gallery.innerHTML = ''; // Clear the existing media
             gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // Adjust columns
 
-            // Adjust gallery classes based on folder
-            if (folder === 'square') {
+            // Adjust gallery classes based on tab
+            if (tab === 'square' || tab === 'talking') {
                 gallery.classList.remove('full-image');
                 gallery.classList.remove('one-column');
-            } else if (folder === 'landscape') {
+            } else if (tab === 'landscape') {
                 gallery.classList.add('full-image');
                 gallery.classList.add('one-column');
-            } else if (folder === 'vertical') {
+            } else if (tab === 'vertical') {
                 gallery.classList.add('full-image');
                 gallery.classList.remove('one-column');
             }
 
-            const basePath = `${folder}/`;
-            const imageNames = imageData[folder];
+            const basePath = tab === 'talking' ? `videos/` : `${tab}/`;
+            const mediaNames = mediaData[tab];
 
-            if (!imageNames || imageNames.length === 0) {
+            if (!mediaNames || mediaNames.length === 0) {
                 const errorMsg = document.createElement('p');
-                errorMsg.textContent = 'No images found in this category.';
+                errorMsg.textContent = 'No media found in this category.';
                 errorMsg.style.color = 'white';
                 errorMsg.style.textAlign = 'center';
                 gallery.appendChild(errorMsg);
                 return;
             }
 
-            // Append images in the stored order
-            imageNames.forEach((name, index) => {
+            // Append images or videos based on tab
+            mediaNames.forEach((name, index) => {
                 const div = document.createElement('div');
-                const img = document.createElement('img');
-                img.src = `${basePath}${name}`;
-                img.alt = name;
-                img.loading = index < 6 ? "eager" : "lazy";
-                img.addEventListener('click', function() {
-                    modalImg.src = this.src;
-                    modal.style.display = 'flex';
-                });
-                div.appendChild(img);
+                if (tab === 'talking') {
+                    const video = document.createElement('video');
+                    video.src = `${basePath}${name}`;
+                    video.controls = true;
+                    video.preload = index < 6 ? "auto" : "metadata";
+                    video.addEventListener('click', function(event) {
+                        event.stopPropagation(); // Prevent modal from opening
+                    });
+                    div.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = `${basePath}${name}`;
+                    img.alt = name;
+                    img.loading = index < 6 ? "eager" : "lazy";
+                    img.addEventListener('click', function() {
+                        modalImg.src = this.src;
+                        modal.style.display = 'flex';
+                    });
+                    div.appendChild(img);
+                }
                 gallery.appendChild(div);
             });
         }
@@ -317,11 +330,13 @@
                 const tab = this.dataset.tab;
 
                 if (tab === 'square') {
-                    loadImages('square', 3); // 3 columns
+                    loadMedia('square', 3); // 3 columns
                 } else if (tab === 'landscape') {
-                    loadImages('landscape', 1); // 1 column
+                    loadMedia('landscape', 1); // 1 column
                 } else if (tab === 'vertical') {
-                    loadImages('vertical', 3); // 3 columns
+                    loadMedia('vertical', 3); // 3 columns
+                } else if (tab === 'talking') {
+                    loadMedia('talking', 3); // 3 columns
                 }
             });
         });
