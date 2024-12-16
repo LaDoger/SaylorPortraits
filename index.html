@@ -313,12 +313,14 @@
                 return;
             }
 
-            videoData.forEach((name, index) => {
+            videoData.forEach((name) => {
                 const div = document.createElement('div');
                 const video = document.createElement('video');
                 video.src = `videos/${name}`;
                 video.controls = true;
                 video.loop = true;
+                // Remove the click event listener for videos
+                /*
                 video.addEventListener('click', function(e) {
                     e.stopPropagation();
                     modalContent.innerHTML = `
@@ -326,6 +328,7 @@
                     `;
                     modal.style.display = 'flex';
                 });
+                */
                 div.appendChild(video);
                 gallery.appendChild(div);
             });
