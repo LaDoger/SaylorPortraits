@@ -148,21 +148,15 @@
             align-items: center;
             background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
-            padding: 40px; /* Added padding around the modal */
-        }
-        #modal-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            max-width: 90%;
-            max-height: 90%;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .modal img, .modal video {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+            max-width: calc(100% - 40px);
+            max-height: calc(100vh - 40px);
             box-shadow: 0 0 20px #ffffff;
-            border-radius: 8px; /* Optional: adds rounded corners */
+            object-fit: contain;
+            margin: auto;
         }
         .gallery.full-image div {
             padding-top: initial;
@@ -178,6 +172,17 @@
         }
         .gallery.one-column {
             grid-template-columns: 1fr;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .modal {
+                padding: 10px;
+            }
+            .modal img, .modal video {
+                max-width: calc(100% - 20px);
+                max-height: calc(100vh - 20px);
+            }
         }
     </style>
 </head>
@@ -312,7 +317,7 @@
                 gallery.appendChild(div);
             });
         }
-
+        
         function loadVideoContent() {
             if (!videoData || videoData.length === 0) {
                 const errorMsg = document.createElement('p');
