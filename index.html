@@ -148,11 +148,21 @@
             align-items: center;
             background-color: rgba(0, 0, 0, 0.8);
             z-index: 1000;
+            padding: 40px; /* Added padding around the modal */
         }
-        .modal img, .modal video {
+        #modal-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             max-width: 90%;
             max-height: 90%;
+        }
+        .modal img, .modal video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             box-shadow: 0 0 20px #ffffff;
+            border-radius: 8px; /* Optional: adds rounded corners */
         }
         .gallery.full-image div {
             padding-top: initial;
@@ -302,7 +312,7 @@
                 gallery.appendChild(div);
             });
         }
-        
+
         function loadVideoContent() {
             if (!videoData || videoData.length === 0) {
                 const errorMsg = document.createElement('p');
