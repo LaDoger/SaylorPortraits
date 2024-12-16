@@ -5,12 +5,14 @@ This script:
 3. Converts .png images into .jpg format.
 4. Generates `images.txt` files in each of the image folders listing the image filenames.
 5. Changes video names in the `/videos` folder into a hash.
-6. Generates `videos.txt` file in the `/videos` folder listing the video filenames.
+6. Extracts the first frame of each video as a thumbnail.
+7. Generates `videos.txt` file in the `/videos` folder listing the video filenames.
 '''
 
 import os
 import hashlib
 import shutil
+import cv2
 from PIL import Image
 
 def hash_file(filepath, blocksize=65536):
@@ -108,6 +110,18 @@ def process_videos(directory):
                 file_hash = hash_file(filepath)
                 new_filename = f"{file_hash}.mp4"
                 new_path = os.path.join(directory, new_filename)
+                
+                # Extract first frame before renaming
+                video = cv2.VideoCapture(filepath)
+                success, frame = video.read()
+                if success:
+                    # Save the first frame as JPG
+                    thumbnail_filename = f"{file_hash}.jpg"
+                    thumbnail_path = os.path.join(directory, thumbnail_filename)
+                    cv2.imwrite(thumbnail_path, frame)
+                video.release()
+
+                # Rename the video file if needed
                 if filepath != new_path:
                     os.rename(filepath, new_path)
                 video_list.append(new_filename)

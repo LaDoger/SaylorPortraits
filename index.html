@@ -302,7 +302,7 @@
                 gallery.appendChild(div);
             });
         }
-
+        
         function loadVideoContent() {
             if (!videoData || videoData.length === 0) {
                 const errorMsg = document.createElement('p');
@@ -319,16 +319,11 @@
                 video.src = `videos/${name}`;
                 video.controls = true;
                 video.loop = true;
-                // Remove the click event listener for videos
-                /*
-                video.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    modalContent.innerHTML = `
-                        <video src="${this.src}" controls loop style="max-width: 90vw; max-height: 90vh;"></video>
-                    `;
-                    modal.style.display = 'flex';
-                });
-                */
+
+                // Create and set poster (thumbnail)
+                const thumbnailPath = `videos/${name.replace(/\.[^/.]+$/, '.jpg')}`;
+                video.poster = thumbnailPath;
+
                 div.appendChild(video);
                 gallery.appendChild(div);
             });
