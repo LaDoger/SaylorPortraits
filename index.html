@@ -223,6 +223,7 @@
                 <button class="tab-button" data-tab="landscape">Landscape</button>
                 <button class="tab-button" data-tab="vertical">Vertical</button>
                 <button class="tab-button" data-tab="talking">Talking</button>
+                <button class="tab-button" data-tab="frens">Frens</button>
             </div>
         </div>
 
@@ -282,6 +283,7 @@
             fetchAndStoreImages('square'),
             fetchAndStoreImages('landscape'),
             fetchAndStoreImages('vertical'),
+            fetchAndStoreImages('frens'),
             fetchAndStoreVideos()
         ]).then(() => {
             loadImages('square', 3);
@@ -291,9 +293,9 @@
             gallery.innerHTML = '';
             gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
-            if (folder === 'square') {
+            if (folder === 'square' || folder === 'frens') {
                 gallery.classList.remove('full-image', 'one-column');
-                loadImageContent('square');
+                loadImageContent(folder);
             } else if (folder === 'landscape') {
                 gallery.classList.add('full-image', 'one-column');
                 loadImageContent('landscape');
