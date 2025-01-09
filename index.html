@@ -33,6 +33,13 @@
             align-items: center;
             overflow-x: hidden;
         }
+        .content-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
         h1 {
             margin: 20px 0 10px 0;
             text-align: center;
@@ -186,6 +193,9 @@
         }
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 0;
+            }
             #modal-content {
                 padding: 10px;
             }
@@ -202,31 +212,32 @@
 </script>
 
 <body>
+<div class="content-wrapper">
+    <h1>Saylor Portraits</h1>
+    <h2>These amazing <a href="https://x.com/saylor/status/1825868178582274236"><b>Michael Saylor</b></a> portraits<br>made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> are meant to<br>be spread and used everywhere!<br><b>Use them well.</b></h2>
 
-<h1>Saylor Portraits</h1>
-<h2>These amazing <a href="https://x.com/saylor/status/1825868178582274236"><b>Michael Saylor</b></a> portraits<br>made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> are meant to<br>be spread and used everywhere!<br><b>Use them well.</b></h2>
+    <div class="gallery-container">
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="square">Square</button>
+                <button class="tab-button" data-tab="landscape">Landscape</button>
+                <button class="tab-button" data-tab="vertical">Vertical</button>
+                <button class="tab-button" data-tab="talking">Talking</button>
+            </div>
+        </div>
 
-<div class="gallery-container">
-    <div class="tabs-container">
-        <div class="tabs">
-            <button class="tab-button active" data-tab="square">Square</button>
-            <button class="tab-button" data-tab="landscape">Landscape</button>
-            <button class="tab-button" data-tab="vertical">Vertical</button>
-            <button class="tab-button" data-tab="talking">Talking</button>
+        <div class="gallery" id="gallery">
         </div>
     </div>
 
-    <div class="gallery" id="gallery">
+    <div class="modal" id="modal">
+        <div id="modal-content"></div>
     </div>
-</div>
 
-<div class="modal" id="modal">
-    <div id="modal-content"></div>
+    <footer>
+        Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
+    </footer>
 </div>
-
-<footer>
-    Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
-</footer>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
