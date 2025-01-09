@@ -188,8 +188,8 @@
             transform: none;
             display: block;
         }
-        .gallery.one-column {
-            grid-template-columns: 1fr;
+        .gallery.two-column {
+            grid-template-columns: repeat(2, 1fr);
         }
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
@@ -295,17 +295,17 @@
             gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
             if (folder === 'square' || folder === 'frens') {
-                gallery.classList.remove('full-image', 'one-column');
+                gallery.classList.remove('full-image', 'two-column');
                 loadImageContent(folder);
             } else if (folder === 'landscape') {
-                gallery.classList.add('full-image', 'one-column');
+                gallery.classList.add('full-image', 'two-column');
                 loadImageContent('landscape');
             } else if (folder === 'vertical') {
                 gallery.classList.add('full-image');
-                gallery.classList.remove('one-column');
+                gallery.classList.remove('two-column');
                 loadImageContent('vertical');
             } else if (folder === 'talking') {
-                gallery.classList.remove('full-image', 'one-column');
+                gallery.classList.remove('full-image', 'two-column');
                 loadVideoContent();
             }
         }
@@ -373,7 +373,7 @@
                 if (tab === 'talking') {
                     loadImages('talking', 3);
                 } else if (tab === 'landscape') {
-                    loadImages('landscape', 1);
+                    loadImages('landscape', 2);
                 } else {
                     loadImages(tab, 3);
                 }
