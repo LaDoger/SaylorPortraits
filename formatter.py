@@ -7,6 +7,8 @@ This script:
 5. Changes video names in the `/videos` folder into a hash.
 6. Extracts the first frame of each video as a thumbnail.
 7. Generates `videos.txt` file in the `/videos` folder listing the video filenames.
+8. Changes .jpg image names in the `/frens` folder into a hash.
+9. Generates `frens.txt` file in the `/frens` folder listing the image filenames.
 '''
 
 import os
@@ -132,12 +134,40 @@ def process_videos(directory):
         for video_name in video_list:
             f.write(f"{video_name}\n")
 
-# Directory where images are stored
+def process_frens(directory):
+    os.makedirs(directory, exist_ok=True)
+    frens_list = []
+    
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            name, ext = os.path.splitext(filename)
+            if ext.lower() in ['.jpg', '.jpeg']:
+                file_hash = hash_file(filepath)
+                new_filename = f"{file_hash}.jpg"
+                new_path = os.path.join(directory, new_filename)
+                
+                # Rename the file if needed
+                if filepath != new_path:
+                    os.rename(filepath, new_path)
+                frens_list.append(new_filename)
+    
+    # Write the frens.txt file
+    frens_txt_path = os.path.join(directory, 'frens.txt')
+    with open(frens_txt_path, 'w') as f:
+        for fren_name in frens_list:
+            f.write(f"{fren_name}\n")
+
+# Directory paths
 image_dir = os.path.join(os.getcwd(), "images")
 video_dir = os.path.join(os.getcwd(), "videos")
+frens_dir = os.path.join(os.getcwd(), "frens")
 
 # Process all images in the specified directory and log them
 process_images(image_dir)
 
 # Process all videos in the specified video directory
 process_videos(video_dir)
+
+# Process all images in the frens directory
+process_frens(frens_dir)
