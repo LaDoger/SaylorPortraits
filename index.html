@@ -251,7 +251,8 @@
         const videoData = [];
 
         function fetchAndStoreImages(folder) {
-            return fetch(`${folder}/images.txt`)
+            const filename = folder === 'frens' ? 'frens.txt' : 'images.txt';
+            return fetch(`${folder}/${filename}`)
                 .then(response => response.text())
                 .then(data => {
                     let imageNames = data.trim().split(/\r?\n/);
