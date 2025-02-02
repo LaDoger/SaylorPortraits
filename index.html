@@ -227,7 +227,7 @@
                 <button class="tab-button active" data-tab="square">Square</button>
                 <button class="tab-button" data-tab="landscape">Lands</button>
                 <button class="tab-button" data-tab="vertical">Vertical</button>
-                <button class="tab-button" data-tab="talking">Talking</button>
+                <button class="tab-button" data-tab="moving">Moving</button>
                 <button class="tab-button" data-tab="frens">Frens</button>
             </div>
         </div>
@@ -309,7 +309,7 @@
                 gallery.classList.add('full-image');
                 gallery.classList.remove('two-column');
                 loadImageContent('vertical');
-            } else if (folder === 'talking') {
+            } else if (folder === 'moving') {
                 gallery.classList.remove('full-image', 'two-column');
                 loadVideoContent();
             }
@@ -375,8 +375,8 @@
                 this.classList.add('active');
 
                 const tab = this.dataset.tab;
-                if (tab === 'talking') {
-                    loadImages('talking', 3);
+                if (tab === 'moving') {
+                    loadImages('moving', 3);
                 } else if (tab === 'landscape') {
                     loadImages('landscape', 2);
                 } else {
