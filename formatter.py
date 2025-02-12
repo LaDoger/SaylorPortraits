@@ -158,8 +158,8 @@ def process_scifi(directory):
                 new_filename = f"{file_hash}.jpg"
                 new_path = os.path.join(directory, new_filename)
 
-                # Rename the file if needed
-                if filepath != new_path:
+                # Only rename the file if it hasn't already been renamed to its hash
+                if filename != new_filename:
                     os.rename(filepath, new_path)
                 scifi_list.append(new_filename)
 
