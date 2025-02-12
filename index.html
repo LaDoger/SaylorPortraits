@@ -229,6 +229,7 @@
                 <button class="tab-button" data-tab="vertical">Tall</button>
                 <button class="tab-button" data-tab="moving">Move</button>
                 <button class="tab-button" data-tab="frens">Frens</button>
+                <button class="tab-button" data-tab="scifi">SciFi</button>
             </div>
         </div>
 
@@ -256,7 +257,7 @@
         const videoData = [];
 
         function fetchAndStoreImages(folder) {
-            const filename = folder === 'frens' ? 'frens.txt' : 'images.txt';
+            const filename = folder === 'frens' ? 'frens.txt' : folder === 'scifi' ? 'scifi.txt' : 'images.txt';
             return fetch(`${folder}/${filename}`)
                 .then(response => response.text())
                 .then(data => {
@@ -290,6 +291,7 @@
             fetchAndStoreImages('landscape'),
             fetchAndStoreImages('vertical'),
             fetchAndStoreImages('frens'),
+            fetchAndStoreImages('scifi'),
             fetchAndStoreVideos()
         ]).then(() => {
             loadImages('square', 3);
@@ -299,7 +301,7 @@
             gallery.innerHTML = '';
             gallery.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
-            if (folder === 'square' || folder === 'frens') {
+            if (folder === 'square' || folder === 'frens' || folder === 'scifi') {
                 gallery.classList.remove('full-image', 'two-column');
                 loadImageContent(folder);
             } else if (folder === 'landscape') {
@@ -342,7 +344,7 @@
                 gallery.appendChild(div);
             });
         }
-        
+
         function loadVideoContent() {
             if (!videoData || videoData.length === 0) {
                 const errorMsg = document.createElement('p');
