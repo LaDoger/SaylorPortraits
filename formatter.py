@@ -1,16 +1,3 @@
-'''
-This script:
-1. Changes image names in the `/images` folder into a hash.
-2. Determines the aspect ratio of each image and places them into `/square`, `/landscape`, or `/vertical` folders.
-3. Converts .png images into .jpg format.
-4. Generates `images.txt` files in each of the image folders listing the image filenames.
-5. Changes video names in the `/videos` folder into a hash.
-6. Extracts the first frame of each video as a thumbnail.
-7. Generates `videos.txt` file in the `/videos` folder listing the video filenames.
-8. Changes .jpg image names in the `/frens` folder into a hash.
-9. Generates `frens.txt` file in the `/frens` folder listing the image filenames.
-'''
-
 import os
 import hashlib
 import shutil
@@ -112,7 +99,7 @@ def process_videos(directory):
                 file_hash = hash_file(filepath)
                 new_filename = f"{file_hash}.mp4"
                 new_path = os.path.join(directory, new_filename)
-                
+
                 # Extract first frame before renaming
                 video = cv2.VideoCapture(filepath)
                 success, frame = video.read()
@@ -127,7 +114,7 @@ def process_videos(directory):
                 if filepath != new_path:
                     os.rename(filepath, new_path)
                 video_list.append(new_filename)
-    
+
     # Write the videos.txt file in the video directory
     videos_txt_path = os.path.join(directory, 'videos.txt')
     with open(videos_txt_path, 'w') as f:
@@ -137,7 +124,7 @@ def process_videos(directory):
 def process_frens(directory):
     os.makedirs(directory, exist_ok=True)
     frens_list = []
-    
+
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
@@ -146,22 +133,47 @@ def process_frens(directory):
                 file_hash = hash_file(filepath)
                 new_filename = f"{file_hash}.jpg"
                 new_path = os.path.join(directory, new_filename)
-                
+
                 # Rename the file if needed
                 if filepath != new_path:
                     os.rename(filepath, new_path)
                 frens_list.append(new_filename)
-    
+
     # Write the frens.txt file
     frens_txt_path = os.path.join(directory, 'frens.txt')
     with open(frens_txt_path, 'w') as f:
         for fren_name in frens_list:
             f.write(f"{fren_name}\n")
 
+def process_scifi(directory):
+    os.makedirs(directory, exist_ok=True)
+    scifi_list = []
+
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            name, ext = os.path.splitext(filename)
+            if ext.lower() == '.jpg':
+                file_hash = hash_file(filepath)
+                new_filename = f"{file_hash}.jpg"
+                new_path = os.path.join(directory, new_filename)
+
+                # Rename the file if needed
+                if filepath != new_path:
+                    os.rename(filepath, new_path)
+                scifi_list.append(new_filename)
+
+    # Write the scifi.txt file
+    scifi_txt_path = os.path.join(directory, 'scifi.txt')
+    with open(scifi_txt_path, 'w') as f:
+        for scifi_name in scifi_list:
+            f.write(f"{scifi_name}\n")
+
 # Directory paths
 image_dir = os.path.join(os.getcwd(), "images")
 video_dir = os.path.join(os.getcwd(), "videos")
 frens_dir = os.path.join(os.getcwd(), "frens")
+scifi_dir = os.path.join(os.getcwd(), "scifi")
 
 # Process all images in the specified directory and log them
 process_images(image_dir)
@@ -171,3 +183,6 @@ process_videos(video_dir)
 
 # Process all images in the frens directory
 process_frens(frens_dir)
+
+# Process all images in the scifi directory
+process_scifi(scifi_dir)
