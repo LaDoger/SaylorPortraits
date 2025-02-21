@@ -270,10 +270,30 @@
             });
         }, { rootMargin: '50px' });
 
-        // Disable right-click/long-press globally
+        // Disable right-click/long-press globally (desktop and touch)
         document.body.addEventListener('contextmenu', (e) => {
             e.preventDefault();
         });
+
+        // Disable long-press on touch devices for thumbnails
+        let touchTimer;
+        const longPressDuration = 500; // Time in ms to detect a long press (0.5s)
+
+        function handleTouchStart(e) {
+            if (e.target.tagName === 'IMG' && !e.target.closest('.modal')) { // Only for thumbnails, not modal images
+                touchTimer = setTimeout(() => {
+                    e.preventDefault(); // Prevent long-press menu on thumbnails
+                }, longPressDuration);
+            }
+        }
+
+        function handleTouchEnd() {
+            clearTimeout(touchTimer);
+        }
+
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('touchcancel', handleTouchEnd);
 
         function fetchAndStoreImages(folder) {
             const filename = folder === 'frens' ? 'frens.txt' : folder === 'scifi' ? 'scifi.txt' : 'images.txt';
@@ -374,6 +394,11 @@
                     // Enable right-click/long-press on modal image
                     modalImg.addEventListener('contextmenu', (e) => {
                         e.stopPropagation(); // Prevent the body listener from blocking this
+                    });
+
+                    // Enable long-press on modal image (remove touch prevention)
+                    modalImg.addEventListener('touchstart', (e) => {
+                        e.stopPropagation(); // Prevent the global touch handler from blocking
                     });
                 });
                 div.appendChild(img);
