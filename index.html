@@ -22,7 +22,6 @@
     <meta name="twitter:site" content="@LaDoger21">
 
     <style>
-        /* Base styles */
         body {
             font-family: 'Lexend', sans-serif;
             background-color: black;
@@ -58,10 +57,9 @@
             font-family: 'Lexend', sans-serif;
         }
         h2 a {
-            color: #FA660F ;
+            color: #FA660F;
             text-decoration: none;
         }
-        /* Tabs styling */
         .tabs-container {
             width: 100%;
             max-width: 960px;
@@ -143,7 +141,7 @@
             font-family: 'Lexend', sans-serif;
         }
         footer a {
-            color: #FA660F ;
+            color: #FA660F;
             text-decoration: none;
         }
         footer a:hover {
@@ -182,26 +180,25 @@
             box-shadow: 0 0 20px #ffffff;
         }
         .gallery.full-image div {
-        padding-top: initial;
-        line-height: 0;
-        display: flex;
-        align-items: center;
-        background-color: black;
-        min-height: 100%;
-    }
-    .gallery.full-image img, .gallery.full-image video {
-        position: static;
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-        transform: none;
-        display: block;
-        margin: auto;
-    }
-    .gallery.two-column {
-        grid-template-columns: repeat(2, 1fr);
-    }
-        /* Mobile responsive adjustments */
+            padding-top: initial;
+            line-height: 0;
+            display: flex;
+            align-items: center;
+            background-color: black;
+            min-height: 100%;
+        }
+        .gallery.full-image img, .gallery.full-image video {
+            position: static;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            transform: none;
+            display: block;
+            margin: auto;
+        }
+        .gallery.two-column {
+            grid-template-columns: repeat(2, 1fr);
+        }
         @media (max-width: 768px) {
             .content-wrapper {
                 padding: 0;
@@ -238,8 +235,7 @@
             </div>
         </div>
 
-        <div class="gallery" id="gallery">
-        </div>
+        <div class="gallery" id="gallery"></div>
     </div>
 
     <div class="modal" id="modal">
@@ -260,6 +256,16 @@
 
         const imageData = {};
         const videoData = [];
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    observer.unobserve(img);
+                }
+            });
+        }, { rootMargin: '50px' });
 
         function fetchAndStoreImages(folder) {
             const filename = folder === 'frens' ? 'frens.txt' : folder === 'scifi' ? 'scifi.txt' : 'images.txt';
@@ -338,11 +344,18 @@
             imageNames.forEach((name, index) => {
                 const div = document.createElement('div');
                 const img = document.createElement('img');
-                img.src = `${basePath}${name}`;
                 img.alt = name;
-                img.loading = index < 6 ? "eager" : "lazy";
+                const thumbSrc = `${basePath}${name}`;
+                const fullSrc = `${basePath}${name.replace('_thumb.jpg', '.jpg')}`;
+                img.dataset.fullsrc = fullSrc;
+                if (index < 6) {
+                    img.src = thumbSrc;  // Load first 6 immediately
+                } else {
+                    img.dataset.src = thumbSrc;  // Lazy load the rest
+                    observer.observe(img);
+                }
                 img.addEventListener('click', function() {
-                    modalContent.innerHTML = `<img src="${this.src}" alt="${this.alt}">`;
+                    modalContent.innerHTML = `<img src="${this.dataset.fullsrc}" alt="${this.alt}">`;
                     modal.style.display = 'flex';
                 });
                 div.appendChild(img);
@@ -366,11 +379,7 @@
                 video.src = `videos/${name}`;
                 video.controls = true;
                 video.loop = true;
-
-                // Create and set poster (thumbnail)
-                const thumbnailPath = `videos/${name.replace(/\.[^/.]+$/, '.jpg')}`;
-                video.poster = thumbnailPath;
-
+                video.poster = `videos/${name.replace(/\.[^/.]+$/, '.jpg')}`;
                 div.appendChild(video);
                 gallery.appendChild(div);
             });
@@ -380,7 +389,6 @@
             button.addEventListener('click', function() {
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-
                 const tab = this.dataset.tab;
                 if (tab === 'moving') {
                     loadImages('moving', 3);
