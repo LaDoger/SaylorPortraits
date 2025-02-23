@@ -25,7 +25,7 @@
             const aspect = window.innerWidth / window.innerHeight;
             camera.aspect = aspect;
             if (aspect < 1) { // Portrait mode
-                camera.position.z = 60; // Zoom out for mobile
+                camera.position.z = 45; // Zoom out for mobile
             } else { // Landscape mode
                 camera.position.z = 30; // Default for desktop
             }
