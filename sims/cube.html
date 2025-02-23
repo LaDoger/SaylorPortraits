@@ -14,13 +14,24 @@
     <script>
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const aspect = window.innerWidth / window.innerHeight;
+        const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Camera position
-        camera.position.z = 30;
+        // Dynamic camera position based on aspect ratio
+        function updateCamera() {
+            const aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = aspect;
+            if (aspect < 1) { // Portrait mode
+                camera.position.z = 60; // Zoom out for mobile
+            } else { // Landscape mode
+                camera.position.z = 30; // Default for desktop
+            }
+            camera.updateProjectionMatrix();
+        }
+        updateCamera(); // Initial call
 
         // Group for cube and stars
         const rotationGroup = new THREE.Group();
@@ -220,8 +231,8 @@
             }
 
             // Spawn lightning
-            if (frame % 1 === 0) { // Every frame
-                for (let i = 0; i < 50; i++) { // 50 arcs per frame
+            if (frame % 1 === 0) {
+                for (let i = 0; i < 50; i++) {
                     spawnLightning();
                 }
             }
@@ -245,9 +256,8 @@
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            updateCamera();
         });
 
         // Start animation
