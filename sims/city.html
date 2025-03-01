@@ -17,8 +17,12 @@
         const aspect = window.innerWidth / window.innerHeight;
         const camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        try {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+        } catch (e) {
+            console.error("Renderer setup failed:", e);
+        }
 
         // Dynamic camera position (fixed relative to city)
         function updateCamera() {
@@ -41,88 +45,93 @@
         // City parameters
         const gridSize = 21;
         const buildingWidth = 0.5;
-        const spacing = 0.5; // Gap between buildings
+        const spacing = 0.5;
         const instanceCount = gridSize * gridSize;
 
         // Gaussian height distribution (scaled 2x: 1 to 20 units)
         const heights = new Float32Array(instanceCount);
-        const meanHeight = 1.5; // Base mean before scaling
-        const stdDev = 1.5; // Base stdDev before scaling
+        const meanHeight = 1.5;
+        const stdDev = 1.5;
         for (let i = 0; i < instanceCount; i++) {
             const u1 = Math.random();
             const u2 = Math.random();
             const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
             heights[i] = meanHeight + stdDev * z;
             heights[i] = Math.max(0.5, Math.min(10, heights[i]));
-            heights[i] = heights[i] * 2; // Scale 2x (1 to 20 units)
-            heights[i] = Math.round(heights[i] * 2) / 2; // Round to nearest 0.5
+            heights[i] = heights[i] * 2;
+            heights[i] = Math.round(heights[i] * 2) / 2;
         }
 
-        // Define 6 random yellow-to-orange colors
-        const colors = [];
-        for (let i = 0; i < 6; i++) {
-            const hue = 30 + Math.random() * 30;
-            colors.push(new THREE.Color(`hsl(${hue}, 100%, 50%)`));
-        }
+        // Create window texture
+        function createWindowTexture(height) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = height * 8; // Scale with building height
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a1a1a'; // Dark background
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Building geometry and materials
-        const buildingGeometry = new THREE.BoxGeometry(buildingWidth, 1, buildingWidth);
-        const buildingMaterials = colors.map(color => new THREE.MeshLambertMaterial({
-            color: color,
-            emissive: color,
-            emissiveIntensity: 0.8
-        }));
-        const instancedBuildings = new THREE.InstancedMesh(buildingGeometry, buildingMaterials, instanceCount);
-        const dummy = new THREE.Object3D();
-        const buildingPositions = [];
-
-        // Position buildings
-        let index = 0;
-        for (let x = 0; x < gridSize; x++) {
-            for (let z = 0; z < gridSize; z++) {
-                const height = heights[index];
-                const pos = new THREE.Vector3(
-                    (x - gridSize / 2) * (buildingWidth + spacing),
-                    height / 2 + 1, // Offset by new foundation thickness (1 unit)
-                    (z - gridSize / 2) * (buildingWidth + spacing)
-                );
-                dummy.position.copy(pos);
-                dummy.scale.y = height;
-                dummy.updateMatrix();
-                instancedBuildings.setMatrixAt(index, dummy.matrix);
-                buildingPositions.push({ x, z, height, pos: pos.clone() });
-                index++;
+            // Add bright glowing horizontal window lines
+            const windowColors = ['#ffffcc', '#ffdd99', '#ffffff']; // Brighter, more vivid
+            const windowsPerUnit = 4;
+            const totalLines = Math.floor(height * windowsPerUnit);
+            for (let i = 0; i < totalLines; i++) {
+                const y = (i / totalLines) * canvas.height;
+                ctx.fillStyle = windowColors[Math.floor(Math.random() * windowColors.length)];
+                ctx.fillRect(0, y, canvas.width, 1); // 1px tall lines
             }
+
+            return new THREE.CanvasTexture(canvas);
         }
-        cityGroup.add(instancedBuildings);
+
+        // Building geometry and material
+        const buildingGeometry = new THREE.BoxGeometry(buildingWidth, 1, buildingWidth);
+        const buildingPositions = [];
+        for (let i = 0; i < instanceCount; i++) {
+            const x = (i % gridSize - gridSize / 2) * (buildingWidth + spacing);
+            const z = (Math.floor(i / gridSize) - gridSize / 2) * (buildingWidth + spacing);
+            const height = heights[i];
+            const windowTexture = createWindowTexture(height);
+            const buildingMaterial = new THREE.MeshBasicMaterial({
+                map: windowTexture, // Use as base color map
+                emissive: 0x000000,
+                emissiveMap: windowTexture, // Same texture for glow
+                emissiveIntensity: 1.0 // Pure texture glow
+            });
+            const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+            building.position.set(x, height / 2 + 1, z);
+            building.scale.y = height;
+            cityGroup.add(building);
+            buildingPositions.push({ x, z, height, pos: building.position.clone() });
+        }
 
         // Foundation (stone-like grey, 21x21x1 object)
-        const foundationWidth = 21; // Explicitly 21 units wide
-        const foundationDepth = 1; // 1 unit thick
-        const foundationLength = 21; // Explicitly 21 units deep
+        const foundationWidth = 21;
+        const foundationDepth = 1;
+        const foundationLength = 21;
         const foundationGeometry = new THREE.BoxGeometry(foundationWidth, foundationDepth, foundationLength);
         const foundationMaterial = new THREE.MeshLambertMaterial({
-            color: 0x6e6e6e, // Stone-like grey
-            emissive: 0x000000, // No emission
+            color: 0x6e6e6e,
+            emissive: 0x000000,
             emissiveIntensity: 0
         });
         const foundation = new THREE.Mesh(foundationGeometry, foundationMaterial);
         foundation.position.set(-0.5 * (buildingWidth + spacing), foundationDepth / 2, -0.5 * (buildingWidth + spacing));
         cityGroup.add(foundation);
 
-        // Point light
-        const light = new THREE.PointLight(0xffcc00, 1.5, 100);
-        light.position.set(0, 20, 0);
-        cityGroup.add(light);
+        // Point light (removed since MeshBasicMaterial doesn't need it)
+        // const light = new THREE.PointLight(0xffcc00, 0.5, 100);
+        // light.position.set(0, 20, 0);
+        // cityGroup.add(light);
 
         // Starry background (rotates with city, astrologically coherent)
         const starGeometry = new THREE.BufferGeometry();
         const starCount = 5000;
         const starPositions = new Float32Array(starCount * 3);
-        const starRadius = 200; // Fixed radius for spherical distribution
+        const starRadius = 200;
         for (let i = 0; i < starCount * 3; i += 3) {
             const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(2 * Math.random() - 1); // Uniform spherical distribution
+            const phi = Math.acos(2 * Math.random() - 1);
             starPositions[i] = starRadius * Math.sin(phi) * Math.cos(theta);
             starPositions[i + 1] = starRadius * Math.sin(phi) * Math.sin(theta);
             starPositions[i + 2] = starRadius * Math.cos(phi);
@@ -137,7 +146,7 @@
             y: (Math.random() - 0.5) * 0.005
         };
 
-        // Mouse/touch controls (rotates cityGroup, including stars)
+        // Mouse/touch controls (rotates cityGroup)
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
 
@@ -148,9 +157,7 @@
 
         renderer.domElement.addEventListener('mousemove', (event) => {
             if (isDragging) {
-                const deltaMove = {
-                    x: event.clientX - previousMousePosition.x
-                };
+                const deltaMove = { x: event.clientX - previousMousePosition.x };
                 cityGroup.rotation.y += deltaMove.x * 0.005;
                 previousMousePosition = { x: event.clientX, y: event.clientY };
             }
@@ -169,9 +176,7 @@
 
         renderer.domElement.addEventListener('touchmove', (event) => {
             if (isDragging && event.touches.length === 1) {
-                const deltaMove = {
-                    x: event.touches[0].clientX - previousMousePosition.x
-                };
+                const deltaMove = { x: event.touches[0].clientX - previousMousePosition.x };
                 cityGroup.rotation.y += deltaMove.x * 0.005;
                 previousMousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
             }
@@ -186,16 +191,19 @@
             requestAnimationFrame(animate);
 
             if (!isDragging) {
-                cityGroup.rotation.y += rotationSpeed.y; // City, foundation, and stars rotate together
+                cityGroup.rotation.y += rotationSpeed.y;
             }
 
-            // Update camera to follow cityGroup rotation
             camera.position.x = cityGroup.position.x + (aspect < 1 ? 0 : 0);
             camera.position.y = cityGroup.position.y + (aspect < 1 ? 20 : 15);
             camera.position.z = cityGroup.position.z + (aspect < 1 ? 25 : 20);
             camera.lookAt(cityGroup.position);
 
-            renderer.render(scene, camera);
+            try {
+                renderer.render(scene, camera);
+            } catch (e) {
+                console.error("Render failed:", e);
+            }
         }
 
         // Handle window resize
@@ -204,8 +212,12 @@
             updateCamera();
         });
 
-        // Start animation
-        animate();
+        // Start animation with error handling
+        try {
+            animate();
+        } catch (e) {
+            console.error("Animation loop failed:", e);
+        }
     </script>
 </body>
 </html>
