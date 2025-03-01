@@ -13,6 +13,18 @@ def hash_file(filepath, blocksize=65536):
             buf = afile.read(blocksize)
     return hasher.hexdigest()[:10]
 
+def is_already_hashed(filename):
+    if len(filename) < 10:
+        return False
+    hex_chars = set('0123456789abcdef')
+    return all(c.lower() in hex_chars for c in filename[:10])
+
+def read_existing_txt(filepath):
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            return set(line.strip() for line in f if line.strip())
+    return set()
+
 def process_images(directory):
     parent_dir = os.path.dirname(directory)
     square_dir = os.path.join(parent_dir, 'square')
@@ -23,181 +35,202 @@ def process_images(directory):
     os.makedirs(landscape_dir, exist_ok=True)
     os.makedirs(vertical_dir, exist_ok=True)
 
-    square_images = []
-    landscape_images = []
-    vertical_images = []
+    square_images = read_existing_txt(os.path.join(square_dir, 'images.txt'))
+    landscape_images = read_existing_txt(os.path.join(landscape_dir, 'images.txt'))
+    vertical_images = read_existing_txt(os.path.join(vertical_dir, 'images.txt'))
 
+    # Process new files and generate thumbnails
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
             name, ext = os.path.splitext(filename)
             if ext.lower() in ['.png', '.jpg', '.jpeg']:
-                file_hash = hash_file(filepath)
-                new_filename = f"{file_hash}"
-
-                with Image.open(filepath) as img:
-                    width, height = img.size
-                    if width == height:
-                        aspect = 'square'
-                        img_dir = square_dir
-                        image_list = square_images
-                        thumb_size = (512, 512)  # Square thumbnails: 512x512
-                    elif width > height:
-                        aspect = 'landscape'
-                        img_dir = landscape_dir
-                        image_list = landscape_images
-                        scale = 512 / width
-                        thumb_size = (512, int(height * scale))  # Longer side 512
-                    else:
-                        aspect = 'vertical'
-                        img_dir = vertical_dir
-                        image_list = vertical_images
-                        scale = 512 / height
-                        thumb_size = (int(width * scale), 512)  # Longer side 512
-
-                    # Generate thumbnail
-                    thumb_img = img.resize(thumb_size, Image.LANCZOS)
-                    thumb_jpg_filename = f"{new_filename}_thumb.jpg"
-                    thumb_jpg_path = os.path.join(img_dir, thumb_jpg_filename)
-                    thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
-
-                    # Save full-size image
-                    full_jpg_filename = f"{new_filename}.jpg"
-                    full_jpg_path = os.path.join(img_dir, full_jpg_filename)
-                    if ext.lower() == '.png':
-                        img.convert('RGB').save(full_jpg_path, 'JPEG', quality=95)
-                    else:
-                        # Use copy2 only if the paths are different to avoid SameFileError
-                        if filepath != full_jpg_path:
-                            shutil.copy2(filepath, full_jpg_path)
-                        else:
-                            # If paths are the same, skip the copy but ensure the file exists
-                            if not os.path.exists(full_jpg_path):
-                                shutil.copy2(filepath, full_jpg_path)
-
-                    # Rename original file
+                if is_already_hashed(filename):
+                    file_hash = filename[:10]
+                else:
+                    file_hash = hash_file(filepath)
+                    new_filename = f"{file_hash}"
                     new_original_filename = f"{new_filename}{ext.lower()}"
                     new_original_path = os.path.join(directory, new_original_filename)
                     if filepath != new_original_path:
                         os.rename(filepath, new_original_path)
+                        filepath = new_original_path
 
-                    image_list.append(thumb_jpg_filename)
+                with Image.open(filepath) as img:
+                    width, height = img.size
+                    if width == height:
+                        img_dir = square_dir
+                        image_list = square_images
+                        thumb_size = (512, 512)
+                    elif width > height:
+                        img_dir = landscape_dir
+                        image_list = landscape_images
+                        scale = 512 / width
+                        thumb_size = (512, int(height * scale))
+                    else:
+                        img_dir = vertical_dir
+                        image_list = vertical_images
+                        scale = 512 / height
+                        thumb_size = (int(width * scale), 512)
 
-    # Write images.txt
+                    thumb_jpg_filename = f"{file_hash}_thumb.jpg"
+                    thumb_jpg_path = os.path.join(img_dir, thumb_jpg_filename)
+                    
+                    if not os.path.exists(thumb_jpg_path):
+                        thumb_img = img.resize(thumb_size, Image.LANCZOS)
+                        thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
+                        print(f"Generated new thumbnail: {thumb_jpg_path}")
+
+                    full_jpg_filename = f"{file_hash}.jpg"
+                    full_jpg_path = os.path.join(img_dir, full_jpg_filename)
+                    if not os.path.exists(full_jpg_path):
+                        if ext.lower() == '.png':
+                            img.convert('RGB').save(full_jpg_path, 'JPEG', quality=95)
+                        else:
+                            if filepath != full_jpg_path:
+                                shutil.copy2(filepath, full_jpg_path)
+
+                    image_list.add(thumb_jpg_filename)
+                    print(f"Added to {img_dir}/images.txt: {thumb_jpg_filename}")
+
+    # Write results
     for dir_path, images in zip([square_dir, landscape_dir, vertical_dir], 
                                 [square_images, landscape_images, vertical_images]):
         images_txt_path = os.path.join(dir_path, 'images.txt')
         with open(images_txt_path, 'w') as f:
-            for img_name in images:
+            for img_name in sorted(images):
                 f.write(f"{img_name}\n")
+        print(f"Wrote {len(images)} entries to {images_txt_path}")
 
 def process_videos(directory):
-    video_list = []
+    videos_txt_path = os.path.join(directory, 'videos.txt')
+    video_list = read_existing_txt(videos_txt_path)
+
+    # Process videos
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
             name, ext = os.path.splitext(filename)
             if ext.lower() == '.mp4':
-                file_hash = hash_file(filepath)
-                new_filename = f"{file_hash}.mp4"
-                new_path = os.path.join(directory, new_filename)
+                if is_already_hashed(filename):
+                    file_hash = filename[:10]
+                else:
+                    file_hash = hash_file(filepath)
+                    new_filename = f"{file_hash}.mp4"
+                    new_path = os.path.join(directory, new_filename)
+                    if filepath != new_path:
+                        os.rename(filepath, new_path)
+                        filepath = new_path
 
-                video = cv2.VideoCapture(filepath)
-                success, frame = video.read()
-                if success:
-                    thumbnail_filename = f"{file_hash}.jpg"
-                    thumbnail_path = os.path.join(directory, thumbnail_filename)
-                    cv2.imwrite(thumbnail_path, frame)
-                video.release()
+                thumbnail_filename = f"{file_hash}.jpg"
+                thumbnail_path = os.path.join(directory, thumbnail_filename)
+                
+                if not os.path.exists(thumbnail_path):
+                    video = cv2.VideoCapture(filepath)
+                    success, frame = video.read()
+                    if success:
+                        cv2.imwrite(thumbnail_path, frame)
+                        print(f"Generated new thumbnail: {thumbnail_path}")
+                    video.release()
 
-                if filepath != new_path:
-                    os.rename(filepath, new_path)
-                video_list.append(new_filename)
+                video_name = f"{file_hash}.mp4"
+                video_list.add(video_name)
+                print(f"Added to videos.txt: {video_name}")
 
-    videos_txt_path = os.path.join(directory, 'videos.txt')
     with open(videos_txt_path, 'w') as f:
-        for video_name in video_list:
+        for video_name in sorted(video_list):
             f.write(f"{video_name}\n")
+    print(f"Wrote {len(video_list)} entries to {videos_txt_path}")
 
 def process_frens(directory):
     os.makedirs(directory, exist_ok=True)
-    frens_list = []
+    frens_txt_path = os.path.join(directory, 'frens.txt')
+    frens_list = read_existing_txt(frens_txt_path)
 
+    # Process new files
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
             name, ext = os.path.splitext(filename)
             if ext.lower() in ['.jpg', '.jpeg']:
-                file_hash = hash_file(filepath)
-                new_filename = f"{file_hash}"
-
-                with Image.open(filepath) as img:
-                    thumb_img = img.resize((512, 512), Image.LANCZOS)  # Treat as square
-                    thumb_jpg_filename = f"{new_filename}_thumb.jpg"
-                    thumb_jpg_path = os.path.join(directory, thumb_jpg_filename)
-                    thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
-
-                    full_jpg_filename = f"{new_filename}.jpg"
-                    full_jpg_path = os.path.join(directory, full_jpg_filename)
-                    # Use copy2 only if the paths are different to avoid SameFileError
-                    if filepath != full_jpg_path:
-                        shutil.copy2(filepath, full_jpg_path)
-                    else:
-                        # If paths are the same, skip the copy but ensure the file exists
-                        if not os.path.exists(full_jpg_path):
-                            shutil.copy2(filepath, full_jpg_path)
-
+                if is_already_hashed(filename):
+                    file_hash = filename[:10]
+                else:
+                    file_hash = hash_file(filepath)
+                    new_filename = f"{file_hash}"
                     new_original_filename = f"{new_filename}{ext.lower()}"
                     new_original_path = os.path.join(directory, new_original_filename)
                     if filepath != new_original_path:
                         os.rename(filepath, new_original_path)
+                        filepath = new_original_path
 
-                    frens_list.append(thumb_jpg_filename)
+                thumb_jpg_filename = f"{file_hash}_thumb.jpg"
+                thumb_jpg_path = os.path.join(directory, thumb_jpg_filename)
+                
+                if not os.path.exists(thumb_jpg_path):
+                    with Image.open(filepath) as img:
+                        thumb_img = img.resize((512, 512), Image.LANCZOS)
+                        thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
+                        print(f"Generated new thumbnail: {thumb_jpg_path}")
 
-    frens_txt_path = os.path.join(directory, 'frens.txt')
+                full_jpg_filename = f"{file_hash}.jpg"
+                full_jpg_path = os.path.join(directory, full_jpg_filename)
+                if not os.path.exists(full_jpg_path):
+                    if filepath != full_jpg_path:
+                        shutil.copy2(filepath, full_jpg_path)
+
+                frens_list.add(thumb_jpg_filename)
+                print(f"Added to frens.txt: {thumb_jpg_filename}")
+
     with open(frens_txt_path, 'w') as f:
-        for fren_name in frens_list:
+        for fren_name in sorted(frens_list):
             f.write(f"{fren_name}\n")
+    print(f"Wrote {len(frens_list)} entries to {frens_txt_path}")
 
 def process_scifi(directory):
     os.makedirs(directory, exist_ok=True)
-    scifi_list = []
+    scifi_txt_path = os.path.join(directory, 'scifi.txt')
+    scifi_list = read_existing_txt(scifi_txt_path)
 
+    # Process new files
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
             name, ext = os.path.splitext(filename)
             if ext.lower() == '.jpg':
-                file_hash = hash_file(filepath)
-                new_filename = f"{file_hash}"
-
-                with Image.open(filepath) as img:
-                    thumb_img = img.resize((512, 512), Image.LANCZOS)  # Treat as square
-                    thumb_jpg_filename = f"{new_filename}_thumb.jpg"
-                    thumb_jpg_path = os.path.join(directory, thumb_jpg_filename)
-                    thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
-
-                    full_jpg_filename = f"{new_filename}.jpg"
-                    full_jpg_path = os.path.join(directory, full_jpg_filename)
-                    # Use copy2 only if the paths are different to avoid SameFileError
-                    if filepath != full_jpg_path:
-                        shutil.copy2(filepath, full_jpg_path)
-                    else:
-                        # If paths are the same, skip the copy but ensure the file exists
-                        if not os.path.exists(full_jpg_path):
-                            shutil.copy2(filepath, full_jpg_path)
-
+                if is_already_hashed(filename):
+                    file_hash = filename[:10]
+                else:
+                    file_hash = hash_file(filepath)
+                    new_filename = f"{file_hash}"
                     new_original_filename = f"{new_filename}{ext.lower()}"
                     new_original_path = os.path.join(directory, new_original_filename)
                     if filepath != new_original_path:
                         os.rename(filepath, new_original_path)
+                        filepath = new_original_path
 
-                    scifi_list.append(thumb_jpg_filename)
+                thumb_jpg_filename = f"{file_hash}_thumb.jpg"
+                thumb_jpg_path = os.path.join(directory, thumb_jpg_filename)
+                
+                if not os.path.exists(thumb_jpg_path):
+                    with Image.open(filepath) as img:
+                        thumb_img = img.resize((512, 512), Image.LANCZOS)
+                        thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
+                        print(f"Generated new thumbnail: {thumb_jpg_path}")
 
-    scifi_txt_path = os.path.join(directory, 'scifi.txt')
+                full_jpg_filename = f"{file_hash}.jpg"
+                full_jpg_path = os.path.join(directory, full_jpg_filename)
+                if not os.path.exists(full_jpg_path):
+                    if filepath != full_jpg_path:
+                        shutil.copy2(filepath, full_jpg_path)
+
+                scifi_list.add(thumb_jpg_filename)
+                print(f"Added to scifi.txt: {thumb_jpg_filename}")
+
     with open(scifi_txt_path, 'w') as f:
-        for scifi_name in scifi_list:
+        for scifi_name in sorted(scifi_list):
             f.write(f"{scifi_name}\n")
+    print(f"Wrote {len(scifi_list)} entries to {scifi_txt_path}")
 
 # Directory paths
 image_dir = os.path.join(os.getcwd(), "images")
