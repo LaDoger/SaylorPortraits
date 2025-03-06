@@ -85,7 +85,7 @@ def process_images(directory):
                     full_jpg_path = os.path.join(img_dir, full_jpg_filename)
                     if not os.path.exists(full_jpg_path):
                         if ext.lower() == '.png':
-                            img.convert('RGB').save(full_jpg_path, 'JPEG', quality=95)
+                            img.convert('RGB').save(full_jpg_path, 'JPEG', quality=80)
                         else:
                             if filepath != full_jpg_path:
                                 shutil.copy2(filepath, full_jpg_path)
