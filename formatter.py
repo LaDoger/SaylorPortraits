@@ -232,14 +232,65 @@ def process_scifi(directory):
             f.write(f"{scifi_name}\n")
     print(f"Wrote {len(scifi_list)} entries to {scifi_txt_path}")
 
+def process_photos(directory):
+    os.makedirs(directory, exist_ok=True)
+    photos_txt_path = os.path.join(directory, 'photos.txt')
+    photos_list = read_existing_txt(photos_txt_path)
+
+    # Process new files
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            name, ext = os.path.splitext(filename)
+            if ext.lower() in ['.jpg', '.jpeg', '.png']:  # Added .png support
+                if is_already_hashed(filename):
+                    file_hash = filename[:10]
+                else:
+                    file_hash = hash_file(filepath)
+                    new_filename = f"{file_hash}"
+                    new_original_filename = f"{new_filename}{ext.lower()}"
+                    new_original_path = os.path.join(directory, new_original_filename)
+                    if filepath != new_original_path:
+                        os.rename(filepath, new_original_path)
+                        filepath = new_original_path
+
+                thumb_jpg_filename = f"{file_hash}_thumb.jpg"
+                thumb_jpg_path = os.path.join(directory, thumb_jpg_filename)
+                
+                if not os.path.exists(thumb_jpg_path):
+                    with Image.open(filepath) as img:
+                        thumb_img = img.resize((512, 512), Image.LANCZOS)
+                        thumb_img.convert('RGB').save(thumb_jpg_path, 'JPEG', quality=80)
+                        print(f"Generated new thumbnail: {thumb_jpg_path}")
+
+                full_jpg_filename = f"{file_hash}.jpg"
+                full_jpg_path = os.path.join(directory, full_jpg_filename)
+                if not os.path.exists(full_jpg_path):
+                    if ext.lower() == '.png':
+                        with Image.open(filepath) as img:
+                            img.convert('RGB').save(full_jpg_path, 'JPEG', quality=80)
+                    else:
+                        if filepath != full_jpg_path:
+                            shutil.copy2(filepath, full_jpg_path)
+
+                photos_list.add(thumb_jpg_filename)
+                print(f"Added to photos.txt: {thumb_jpg_filename}")
+
+    with open(photos_txt_path, 'w') as f:
+        for photo_name in sorted(photos_list):
+            f.write(f"{photo_name}\n")
+    print(f"Wrote {len(photos_list)} entries to {photos_txt_path}")
+
 # Directory paths
 image_dir = os.path.join(os.getcwd(), "images")
 video_dir = os.path.join(os.getcwd(), "videos")
 frens_dir = os.path.join(os.getcwd(), "frens")
 scifi_dir = os.path.join(os.getcwd(), "scifi")
+photos_dir = os.path.join(os.getcwd(), "photos")
 
 # Process everything
 process_images(image_dir)
 process_videos(video_dir)
 process_frens(frens_dir)
 process_scifi(scifi_dir)
+process_photos(photos_dir)
