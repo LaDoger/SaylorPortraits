@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Strategy Logo Maker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Lexend', sans-serif;
+            margin: 0;
+            padding: 20px 20px 0; /* Top padding is 20px */
+            min-height: 100vh;
+            box-sizing: border-box;
+            background-color: #FFFFFF;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; /* Reduced from 20px */
+            flex-grow: 1;
+        }
+        h2 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 0;
+            color: #FA660F; /* Orange */
+            letter-spacing: -0.1em; /* Reduced spacing, matching logo logic */
+            padding-bottom: 10px; /* Ensures 20px total spacing to input */
+        }
+        input {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            font-family: 'Lexend', sans-serif;
+            font-weight: 400; /* Not bold */
+            box-sizing: border-box;
+            border: 3px solid transparent; /* 3px border with gradient */
+            border-radius: 8px; /* Rounded corners */
+            background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, /* White background */
+                        linear-gradient(to right, #FFB6C1, #FFDAB9, #FFDEAD, #E6E6FA, #B0E0E6, #98FB98, #D8BFD8) border-box;
+            animation: gradientShift 8s linear infinite;
+        }
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 0%;
+            }
+            100% {
+                background-position: 200% 0%; /* Continuous shift */
+            }
+        }
+        input {
+            background-size: 100% 100%, 200% 100%; /* First for white, second for gradient */
+        }
+        .canvas-row {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 10px; /* Reduced from 20px */
+            width: 100%;
+            max-width: 800px;
+        }
+        canvas {
+            width: 390px; /* (800 - 10px gap) / 2 */
+            height: auto;
+            border: 1px solid #ccc;
+        }
+        .transparent-bg {
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+                              linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #ccc 75%),
+                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 10px 0; /* Reduced from 20px */
+            background-color: #FFFFFF;
+            font-weight: 400; /* Not bold */
+        }
+        footer a {
+            color: #FA660F; /* Orange */
+            text-decoration: none;
+        }
+        footer a b {
+            font-weight: 700; /* Bold for @LaDoger21 */
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .canvas-row {
+                flex-direction: column;
+                gap: 10px; /* Reduced from 20px */
+            }
+            canvas {
+                width: 100%;
+                max-width: 100%;
+                cursor: pointer; /* Indicates clickable on mobile */
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            input {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Strategy Logo Maker</h2>
+        <input type="text" id="wordInput" value="Logo" oninput="generateLogos()">
+        <div class="canvas-row">
+            <canvas id="canvas1" width="1280" height="720"></canvas> <!-- black on orange -->
+            <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas> <!-- black on transparent -->
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas2" width="1280" height="720"></canvas> <!-- orange on white -->
+            <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas> <!-- orange on transparent -->
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas3" width="1280" height="720"></canvas> <!-- white on black -->
+            <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas> <!-- white on transparent -->
+        </div>
+    </div>
+    <footer>
+        Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
+    </footer>
+
+    <script>
+        const canvases = [
+            { id: 'canvas1', textColor: '#000000', bgColor: '#FA660F', badge: 'blackB.png' },  // black on orange
+            { id: 'canvas2', textColor: '#FA660F', bgColor: '#FFFFFF', badge: 'orangeB.png' },  // orange on white
+            { id: 'canvas3', textColor: '#FFFFFF', bgColor: '#000000', badge: 'whiteB.png' },  // white on black
+            { id: 'canvas4', textColor: '#000000', bgColor: 'transparent', badge: 'blackB.png' },  // black on transparent
+            { id: 'canvas5', textColor: '#FA660F', bgColor: 'transparent', badge: 'orangeB.png' },  // orange on transparent
+            { id: 'canvas6', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' }   // white on transparent
+        ];
+
+        // Preload images
+        const badgeImages = {
+            'blackB.png': new Image(),
+            'orangeB.png': new Image(),
+            'whiteB.png': new Image()
+        };
+        badgeImages['blackB.png'].src = 'blackB.png';
+        badgeImages['orangeB.png'].src = 'orangeB.png';
+        badgeImages['whiteB.png'].src = 'whiteB.png';
+
+        // Detect if device is mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Detect iOS specifically
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        function generateLogos() {
+            const input = document.getElementById('wordInput').value;
+            const word = input ? input + "  " : ""; // Add two spaces only if there's input
+            
+            canvases.forEach(canvasInfo => {
+                const canvas = document.getElementById(canvasInfo.id);
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas (transparent by default)
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Set background only for non-transparent canvases
+                if (canvasInfo.bgColor !== 'transparent') {
+                    ctx.fillStyle = canvasInfo.bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                if (word) {
+                    // Dynamic font size based on word length and height
+                    const maxWidth = canvas.width * 0.9;  // 90% of canvas width
+                    const maxHeight = canvas.height * 0.9; // 90% of canvas height
+                    let fontSize = 200; // Base size
+                    ctx.font = `bold ${fontSize}px Lexend`;
+                    let textWidth = ctx.measureText(word).width;
+                    let textHeight = fontSize; // Approximate height based on font size
+                    
+                    // Adjust font size to fit width
+                    while (textWidth > maxWidth && fontSize > 20) {
+                        fontSize -= 10;
+                        ctx.font = `bold ${fontSize}px Lexend`;
+                        textWidth = ctx.measureText(word).width;
+                        textHeight = fontSize;
+                    }
+                    
+                    // Increase font size for short words, respecting height
+                    while (textWidth < maxWidth * 0.8 && textHeight < maxHeight && fontSize < 500) {
+                        fontSize += 10;
+                        ctx.font = `bold ${fontSize}px Lexend`;
+                        textWidth = ctx.measureText(word).width;
+                        textHeight = fontSize;
+                    }
+                    
+                    // Ensure minimum font size and final adjustment
+                    fontSize = Math.max(fontSize, 20);
+                    if (textHeight > maxHeight) {
+                        fontSize = Math.floor(maxHeight);
+                    }
+                    ctx.font = `bold ${fontSize}px Lexend`;
+                    
+                    // Set text properties
+                    ctx.fillStyle = canvasInfo.textColor;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.letterSpacing = `${fontSize * -0.1}px`; // 90% of normal spacing
+                    
+                    // Draw text in center
+                    ctx.fillText(word, canvas.width/2, canvas.height/2);
+
+                    // Calculate badge size (60% of font size)
+                    const badgeHeight = fontSize * 0.6; // 60% of font size
+                    const badgeWidth = (534 / 889) * badgeHeight; // Maintain aspect ratio (534/889)
+                    
+                    // Position badge at the start of the first space, shifted left by 10% of font size
+                    const inputWidth = ctx.measureText(input).width; // Width of text without spaces
+                    const badgeX = (canvas.width/2) + (inputWidth/2) - (fontSize * 0.1); // Shift left by 10% of font size
+                    const xMetrics = ctx.measureText('x');
+                    const xHeight = xMetrics.actualBoundingBoxAscent; // Height of 'x'
+                    const badgeY = (canvas.height/2) - xHeight - (badgeHeight / 2); // Center of badge at top of 'x'
+                    
+                    // Draw badge image
+                    const badgeImg = badgeImages[canvasInfo.badge];
+                    if (badgeImg.complete) {
+                        ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                    }
+                }
+            });
+            
+            // Add click events after logos are generated
+            setupCanvasClickEvents();
+        }
+        
+        function setupCanvasClickEvents() {
+            canvases.forEach(canvasInfo => {
+                const canvas = document.getElementById(canvasInfo.id);
+                
+                // Remove existing click event to avoid duplicates
+                canvas.onclick = null;
+                
+                // Only add click handlers on mobile
+                if (isMobile) {
+                    canvas.onclick = () => {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const word = document.getElementById('wordInput').value || 'Logo';
+                        const filename = `${word}_${canvasInfo.id}.png`;
+                        
+                        // Special handling for iOS devices
+                        if (isIOS) {
+                            // For iOS - try to use Share API if available (iOS 12+)
+                            if (navigator.share) {
+                                fetch(dataUrl)
+                                    .then(res => res.blob())
+                                    .then(blob => {
+                                        const file = new File([blob], filename, { type: 'image/png' });
+                                        navigator.share({
+                                            files: [file],
+                                            title: filename
+                                        }).catch(() => {
+                                            // Fallback to normal download if share fails
+                                            window.location.href = dataUrl;
+                                        });
+                                    });
+                            } else {
+                                // Direct download for older iOS
+                                window.location.href = dataUrl;
+                            }
+                        } else {
+                            // For Android and other mobile browsers
+                            const link = document.createElement('a');
+                            link.download = filename;
+                            link.href = dataUrl;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                    };
+                }
+                // No click handler on desktop
+            });
+        }
+
+        function resizeCanvases() {
+            const container = document.querySelector('.container');
+            const width = Math.min(800, container.clientWidth);
+            const canvasWidth = (width > 600) ? 390 : width; // 390px for desktop, full width for mobile
+            
+            canvases.forEach(canvasInfo => {
+                const canvas = document.getElementById(canvasInfo.id);
+                canvas.style.width = `${canvasWidth}px`;
+                canvas.style.height = `${(canvasWidth * 720) / 1280}px`;
+            });
+            
+            generateLogos();
+        }
+        
+        window.addEventListener('resize', resizeCanvases);
+        window.addEventListener('load', resizeCanvases);
+        
+        // Initial generation
+        generateLogos();
+    </script>
+</body>
+</html> 
