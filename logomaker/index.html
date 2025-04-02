@@ -276,6 +276,7 @@
                     ctx.fillText(word, canvas.width/2, textY);
 
                     // --- Badge Drawing ---
+                    // Use a more consistent approach for badge positioning
                     const badgeHeight = fontSize * 0.6; // Badge height relative to font size
                     const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image (width/height)
                     const badgeWidth = badgeHeight * badgeAspectRatio;
@@ -288,14 +289,19 @@
                     // Start at canvas center, move to the right edge of the *centered input text*, then shift slightly left.
                     const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12);
 
-                    // *** MODIFIED Y POSITION CALCULATION ***
-                    // Calculate the desired BOTTOM Y coordinate of the badge.
-                    const verticalOffset = fontSize * -0.06;
-                    const badgeBottomY = textY - verticalOffset;
-
-                    // Calculate the TOP Y coordinate needed for drawImage by subtracting the badge's height.
-                    const badgeY = badgeBottomY - badgeHeight;
-
+                    // *** FIXED Y POSITION CALCULATION FOR CROSS-PLATFORM CONSISTENCY ***
+                    // Use the same positioning approach across all platforms
+                    // Calculate vertical position based on font size, not text metrics which can vary
+                    // Use a percentage of font size for a consistent appearance
+                    
+                    // Estimate the cap height (height of capital letters) as a fraction of font size
+                    // This is more consistent across platforms than actualBoundingBox values
+                    const capHeight = fontSize * 0.7; // Approximate cap height
+                    
+                    // Position badge to align its bottom with a point slightly above text center line
+                    // This creates a more balanced appearance with badge near the top of the text
+                    const badgeY = textY - (capHeight / 2) - (fontSize * 0.18);
+                    
                     // Draw badge image
                     const badgeImg = badgeImages[canvasInfo.badge];
                     if (badgeImg.complete && badgeImg.naturalWidth > 0) { // Check if image loaded
