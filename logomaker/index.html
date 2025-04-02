@@ -213,83 +213,88 @@
 
                 if (word) {
                     // --- Dynamic Font Size Calculation ---
-                    const maxWidth = canvas.width * 0.9;  // 90% of canvas width
-                    const maxHeight = canvas.height * 0.9; // 90% of canvas height
-                    let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5); // Start with a reasonable guess based on canvas dimensions
+                    const maxWidth = canvas.width * 0.9;
+                    const maxHeight = canvas.height * 0.9;
+                    let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
                     ctx.font = `bold ${fontSize}px Lexend`;
-                    ctx.letterSpacing = `${fontSize * -0.1}px`; // Apply letter spacing early for accurate measurement
+                    ctx.letterSpacing = `${fontSize * -0.1}px`;
 
                     let metrics = ctx.measureText(word);
                     let textWidth = metrics.width;
                     let textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                    textHeight = textHeight || fontSize; // Fallback if metrics aren't fully supported
+                    textHeight = textHeight || fontSize; // Fallback
 
-                    // Adjust font size iteratively to fit both width and height
                     let iterations = 0;
-                    const maxIterations = 100; // Prevent infinite loops
+                    const maxIterations = 100;
 
                     while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) {
-                        fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98; // Reduce size proportionally, slight overshoot
-                        fontSize = Math.max(fontSize, 10); // Ensure minimum size
+                        // More aggressive reduction if height is the limiter
+                        let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                        fontSize *= scaleFactor * 0.98; // Reduce size proportionally, slight safety margin
+                        fontSize = Math.max(fontSize, 10);
                         ctx.font = `bold ${fontSize}px Lexend`;
                         ctx.letterSpacing = `${fontSize * -0.1}px`;
                         metrics = ctx.measureText(word);
                         textWidth = metrics.width;
                         textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                        textHeight = textHeight || fontSize; // Fallback
+                        textHeight = textHeight || fontSize;
                         iterations++;
                     }
 
-                     // Optionally, try to increase font size if it's much smaller than bounds (less aggressive)
-                    iterations = 0; // Reset iteration count
+                    iterations = 0;
                     while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) {
                          let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                         if (scaleFactor <= 1.02) break; // Avoid tiny increments or infinite loops if already close
-                         fontSize *= Math.min(scaleFactor, 1.1); // Increase size, capped at 10% increments
+                         if (scaleFactor <= 1.02) break;
+                         fontSize *= Math.min(scaleFactor, 1.05); // Less aggressive increase
+                         fontSize = Math.min(fontSize, Math.min(canvas.width, canvas.height)); // Absolute cap
                          ctx.font = `bold ${fontSize}px Lexend`;
                          ctx.letterSpacing = `${fontSize * -0.1}px`;
                          metrics = ctx.measureText(word);
                          textWidth = metrics.width;
                          textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                         textHeight = textHeight || fontSize; // Fallback
+                         textHeight = textHeight || fontSize;
                          iterations++;
                     }
 
-                    // Ensure final size is within bounds after potential increase
                     if (textWidth > maxWidth || textHeight > maxHeight) {
                          fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                         fontSize = Math.max(fontSize, 10);
                          ctx.font = `bold ${fontSize}px Lexend`;
                          ctx.letterSpacing = `${fontSize * -0.1}px`;
+                         metrics = ctx.measureText(word); // Re-measure after final adjustment
+                         textWidth = metrics.width;
                     }
                     // --- End Font Size Calculation ---
 
                     // Set text properties
                     ctx.fillStyle = canvasInfo.textColor;
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
+                    ctx.textBaseline = 'middle'; // Crucial for vertical centering
 
                     // Draw text in center
-                    ctx.fillText(word, canvas.width/2, canvas.height/2);
+                    const textY = canvas.height / 2; // Baseline for middle alignment
+                    ctx.fillText(word, canvas.width/2, textY);
 
                     // --- Badge Drawing ---
-                    // Calculate badge size (60% of font size's cap height - approximate with fontSize)
-                    const badgeHeight = fontSize * 0.6;
-                    const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image
+                    const badgeHeight = fontSize * 0.6; // Badge height relative to font size
+                    const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image (width/height)
                     const badgeWidth = badgeHeight * badgeAspectRatio;
 
-                    // Position badge at the start of the first space, shifted left by 10% of font size
-                    // Need width of the word *without* the trailing spaces for positioning
-                    const inputMetrics = ctx.measureText(input);
+                    // Measure the input text *without* trailing spaces to find its end point
+                    const inputMetrics = ctx.measureText(input); // Use 'input', not 'word'
                     const inputWidth = inputMetrics.width;
 
-                    // Calculate badge X position: Center canvas + half input width - 10% font size
+                    // Calculate X position:
+                    // Start at canvas center, move to the right edge of the *centered input text*, then shift slightly left.
                     const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.1);
 
-                    // Calculate badge Y position: Center canvas - font ascent/cap height - half badge height
-                    // Using metrics if available, otherwise approximate with fontSize
-                    let baseLineY = canvas.height / 2;
-                    let topOfText = baseLineY - (metrics.actualBoundingBoxAscent || fontSize * 0.75); // Approximate ascent if needed
-                    const badgeY = topOfText; // Align top of badge with approximate top of text
+                    // *** MODIFIED Y POSITION CALCULATION ***
+                    // Calculate the desired BOTTOM Y coordinate of the badge.
+                    const verticalOffset = fontSize * -0.07;
+                    const badgeBottomY = textY - verticalOffset;
+
+                    // Calculate the TOP Y coordinate needed for drawImage by subtracting the badge's height.
+                    const badgeY = badgeBottomY - badgeHeight;
 
                     // Draw badge image
                     const badgeImg = badgeImages[canvasInfo.badge];
@@ -298,11 +303,17 @@
                             ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
                         } catch (e) {
                             console.error("Error drawing badge image:", e);
-                            // Optionally draw a placeholder if image fails
                         }
                     } else if (!badgeImg.complete) {
-                        // Redraw when the image loads if it wasn't ready
-                        badgeImg.onload = () => generateLogos(); // Could cause multiple redraws, maybe optimise later
+                        badgeImg.onload = () => {
+                            // Check if canvas still exists in DOM in case of rapid changes
+                            if (document.getElementById(canvasInfo.id)) {
+                                // Redraw *only this specific canvas* when its badge loads
+                                // Avoid triggering a full regeneration if possible
+                                // Simplified: just call generateLogos again, though less efficient
+                                generateLogos();
+                            }
+                        }
                     }
                     // --- End Badge Drawing ---
                 }
@@ -415,20 +426,27 @@
                 }
              }
              Object.values(badgeImages).forEach(img => {
-                if (img.complete) {
+                if (img.complete && img.naturalWidth > 0) { // Check if actually loaded
                     loadedCount++;
                 } else {
                     img.onload = tryInitialDraw;
-                    img.onerror = tryInitialDraw; // Count errors too so it doesn't hang
+                    img.onerror = () => {
+                         console.error(`Failed to load badge: ${img.src}`);
+                         tryInitialDraw(); // Count errors too so it doesn't hang
+                    }
                 }
              });
              if (loadedCount >= totalImages) {
                  resizeCanvases(); // Draw immediately if all cached/loaded
              }
+             // Add a fallback timeout in case onload never fires for some reason
+             setTimeout(() => {
+                if(loadedCount < totalImages) {
+                    console.warn("Timeout waiting for images, attempting draw anyway.");
+                    resizeCanvases();
+                }
+             }, 5000); // 5 second timeout
         });
-
-        // Initial generation call (might be superseded by load event)
-        // generateLogos(); // Removed to rely on load event ensuring images are ready
 
     </script>
 </body>
