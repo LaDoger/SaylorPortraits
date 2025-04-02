@@ -66,9 +66,11 @@
             max-width: 800px;
         }
         canvas {
-            width: 390px; /* (800 - 10px gap) / 2 */
-            height: auto;
+            /* Dynamic width set by JS, initial width helps layout */
+            width: 390px;
+            height: auto; /* Height determined by aspect ratio */
             border: 1px solid #ccc;
+            /* Display aspect ratio will be set by JS */
         }
         .transparent-bg {
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
@@ -84,6 +86,7 @@
             padding: 10px 0; /* Reduced from 20px */
             background-color: #FFFFFF;
             font-weight: 400; /* Not bold */
+            margin-top: 10px; /* Added margin top */
         }
         footer a {
             color: #FA660F; /* Orange */
@@ -101,9 +104,10 @@
                 gap: 10px; /* Reduced from 20px */
             }
             canvas {
-                width: 100%;
+                width: 100% !important; /* Override JS width on mobile */
                 max-width: 100%;
                 cursor: pointer; /* Indicates clickable on mobile */
+                 /* Height still determined by JS aspect ratio */
             }
             h2 {
                 font-size: 1.8em;
@@ -118,6 +122,8 @@
     <div class="container">
         <h2>Strategy Logo Maker</h2>
         <input type="text" id="wordInput" value="Logo" oninput="generateLogos()">
+
+        <!-- Original 16:9 Canvases -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas> <!-- black on orange -->
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas> <!-- black on transparent -->
@@ -130,6 +136,21 @@
             <canvas id="canvas3" width="1280" height="720"></canvas> <!-- white on black -->
             <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas> <!-- white on transparent -->
         </div>
+
+        <!-- New Square 1:1 Canvases -->
+        <div class="canvas-row">
+            <canvas id="canvas7" width="1280" height="1280"></canvas> <!-- black on orange (square) -->
+            <canvas id="canvas10" width="1280" height="1280" class="transparent-bg"></canvas> <!-- black on transparent (square) -->
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas8" width="1280" height="1280"></canvas> <!-- orange on white (square) -->
+            <canvas id="canvas11" width="1280" height="1280" class="transparent-bg"></canvas> <!-- orange on transparent (square) -->
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas9" width="1280" height="1280"></canvas> <!-- white on black (square) -->
+            <canvas id="canvas12" width="1280" height="1280" class="transparent-bg"></canvas> <!-- white on transparent (square) -->
+        </div>
+
     </div>
     <footer>
         Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
@@ -137,12 +158,20 @@
 
     <script>
         const canvases = [
+            // Original 16:9
             { id: 'canvas1', textColor: '#000000', bgColor: '#FA660F', badge: 'blackB.png' },  // black on orange
             { id: 'canvas2', textColor: '#FA660F', bgColor: '#FFFFFF', badge: 'orangeB.png' },  // orange on white
             { id: 'canvas3', textColor: '#FFFFFF', bgColor: '#000000', badge: 'whiteB.png' },  // white on black
             { id: 'canvas4', textColor: '#000000', bgColor: 'transparent', badge: 'blackB.png' },  // black on transparent
             { id: 'canvas5', textColor: '#FA660F', bgColor: 'transparent', badge: 'orangeB.png' },  // orange on transparent
-            { id: 'canvas6', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' }   // white on transparent
+            { id: 'canvas6', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' },   // white on transparent
+            // New 1:1 Square
+            { id: 'canvas7', textColor: '#000000', bgColor: '#FA660F', badge: 'blackB.png' },  // black on orange (square)
+            { id: 'canvas8', textColor: '#FA660F', bgColor: '#FFFFFF', badge: 'orangeB.png' },  // orange on white (square)
+            { id: 'canvas9', textColor: '#FFFFFF', bgColor: '#000000', badge: 'whiteB.png' },  // white on black (square)
+            { id: 'canvas10', textColor: '#000000', bgColor: 'transparent', badge: 'blackB.png' }, // black on transparent (square)
+            { id: 'canvas11', textColor: '#FA660F', bgColor: 'transparent', badge: 'orangeB.png' }, // orange on transparent (square)
+            { id: 'canvas12', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' }  // white on transparent (square)
         ];
 
         // Preload images
@@ -157,126 +186,178 @@
 
         // Detect if device is mobile
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+
         // Detect iOS specifically
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         function generateLogos() {
             const input = document.getElementById('wordInput').value;
             const word = input ? input + "  " : ""; // Add two spaces only if there's input
-            
+
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
+                if (!canvas) {
+                    console.error(`Canvas with id ${canvasInfo.id} not found.`);
+                    return; // Skip if canvas doesn't exist
+                }
                 const ctx = canvas.getContext('2d');
-                
+
                 // Clear canvas (transparent by default)
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
+
                 // Set background only for non-transparent canvases
                 if (canvasInfo.bgColor !== 'transparent') {
                     ctx.fillStyle = canvasInfo.bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
-                
+
                 if (word) {
-                    // Dynamic font size based on word length and height
+                    // --- Dynamic Font Size Calculation ---
                     const maxWidth = canvas.width * 0.9;  // 90% of canvas width
                     const maxHeight = canvas.height * 0.9; // 90% of canvas height
-                    let fontSize = 200; // Base size
+                    let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5); // Start with a reasonable guess based on canvas dimensions
                     ctx.font = `bold ${fontSize}px Lexend`;
-                    let textWidth = ctx.measureText(word).width;
-                    let textHeight = fontSize; // Approximate height based on font size
-                    
-                    // Adjust font size to fit width
-                    while (textWidth > maxWidth && fontSize > 20) {
-                        fontSize -= 10;
+                    ctx.letterSpacing = `${fontSize * -0.1}px`; // Apply letter spacing early for accurate measurement
+
+                    let metrics = ctx.measureText(word);
+                    let textWidth = metrics.width;
+                    let textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                    textHeight = textHeight || fontSize; // Fallback if metrics aren't fully supported
+
+                    // Adjust font size iteratively to fit both width and height
+                    let iterations = 0;
+                    const maxIterations = 100; // Prevent infinite loops
+
+                    while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) {
+                        fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98; // Reduce size proportionally, slight overshoot
+                        fontSize = Math.max(fontSize, 10); // Ensure minimum size
                         ctx.font = `bold ${fontSize}px Lexend`;
-                        textWidth = ctx.measureText(word).width;
-                        textHeight = fontSize;
+                        ctx.letterSpacing = `${fontSize * -0.1}px`;
+                        metrics = ctx.measureText(word);
+                        textWidth = metrics.width;
+                        textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                        textHeight = textHeight || fontSize; // Fallback
+                        iterations++;
                     }
-                    
-                    // Increase font size for short words, respecting height
-                    while (textWidth < maxWidth * 0.8 && textHeight < maxHeight && fontSize < 500) {
-                        fontSize += 10;
-                        ctx.font = `bold ${fontSize}px Lexend`;
-                        textWidth = ctx.measureText(word).width;
-                        textHeight = fontSize;
+
+                     // Optionally, try to increase font size if it's much smaller than bounds (less aggressive)
+                    iterations = 0; // Reset iteration count
+                    while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) {
+                         let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                         if (scaleFactor <= 1.02) break; // Avoid tiny increments or infinite loops if already close
+                         fontSize *= Math.min(scaleFactor, 1.1); // Increase size, capped at 10% increments
+                         ctx.font = `bold ${fontSize}px Lexend`;
+                         ctx.letterSpacing = `${fontSize * -0.1}px`;
+                         metrics = ctx.measureText(word);
+                         textWidth = metrics.width;
+                         textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                         textHeight = textHeight || fontSize; // Fallback
+                         iterations++;
                     }
-                    
-                    // Ensure minimum font size and final adjustment
-                    fontSize = Math.max(fontSize, 20);
-                    if (textHeight > maxHeight) {
-                        fontSize = Math.floor(maxHeight);
+
+                    // Ensure final size is within bounds after potential increase
+                    if (textWidth > maxWidth || textHeight > maxHeight) {
+                         fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                         ctx.font = `bold ${fontSize}px Lexend`;
+                         ctx.letterSpacing = `${fontSize * -0.1}px`;
                     }
-                    ctx.font = `bold ${fontSize}px Lexend`;
-                    
+                    // --- End Font Size Calculation ---
+
                     // Set text properties
                     ctx.fillStyle = canvasInfo.textColor;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.letterSpacing = `${fontSize * -0.1}px`; // 90% of normal spacing
-                    
+
                     // Draw text in center
                     ctx.fillText(word, canvas.width/2, canvas.height/2);
 
-                    // Calculate badge size (60% of font size)
-                    const badgeHeight = fontSize * 0.6; // 60% of font size
-                    const badgeWidth = (534 / 889) * badgeHeight; // Maintain aspect ratio (534/889)
-                    
+                    // --- Badge Drawing ---
+                    // Calculate badge size (60% of font size's cap height - approximate with fontSize)
+                    const badgeHeight = fontSize * 0.6;
+                    const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image
+                    const badgeWidth = badgeHeight * badgeAspectRatio;
+
                     // Position badge at the start of the first space, shifted left by 10% of font size
-                    const inputWidth = ctx.measureText(input).width; // Width of text without spaces
-                    const badgeX = (canvas.width/2) + (inputWidth/2) - (fontSize * 0.1); // Shift left by 10% of font size
-                    const xMetrics = ctx.measureText('x');
-                    const xHeight = xMetrics.actualBoundingBoxAscent; // Height of 'x'
-                    const badgeY = (canvas.height/2) - xHeight - (badgeHeight / 2); // Center of badge at top of 'x'
-                    
+                    // Need width of the word *without* the trailing spaces for positioning
+                    const inputMetrics = ctx.measureText(input);
+                    const inputWidth = inputMetrics.width;
+
+                    // Calculate badge X position: Center canvas + half input width - 10% font size
+                    const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.1);
+
+                    // Calculate badge Y position: Center canvas - font ascent/cap height - half badge height
+                    // Using metrics if available, otherwise approximate with fontSize
+                    let baseLineY = canvas.height / 2;
+                    let topOfText = baseLineY - (metrics.actualBoundingBoxAscent || fontSize * 0.75); // Approximate ascent if needed
+                    const badgeY = topOfText; // Align top of badge with approximate top of text
+
                     // Draw badge image
                     const badgeImg = badgeImages[canvasInfo.badge];
-                    if (badgeImg.complete) {
-                        ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                    if (badgeImg.complete && badgeImg.naturalWidth > 0) { // Check if image loaded
+                        try {
+                            ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                        } catch (e) {
+                            console.error("Error drawing badge image:", e);
+                            // Optionally draw a placeholder if image fails
+                        }
+                    } else if (!badgeImg.complete) {
+                        // Redraw when the image loads if it wasn't ready
+                        badgeImg.onload = () => generateLogos(); // Could cause multiple redraws, maybe optimise later
                     }
+                    // --- End Badge Drawing ---
                 }
             });
-            
+
             // Add click events after logos are generated
             setupCanvasClickEvents();
         }
-        
+
         function setupCanvasClickEvents() {
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                
+                if (!canvas) return; // Skip if canvas doesn't exist
+
                 // Remove existing click event to avoid duplicates
                 canvas.onclick = null;
-                
+
                 // Only add click handlers on mobile
                 if (isMobile) {
                     canvas.onclick = () => {
                         const dataUrl = canvas.toDataURL('image/png');
                         const word = document.getElementById('wordInput').value || 'Logo';
-                        const filename = `${word}_${canvasInfo.id}.png`;
-                        
+                        // Include aspect ratio marker in filename for clarity
+                        const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9';
+                        const filename = `${word}_${canvasInfo.textColor}_on_${canvasInfo.bgColor === 'transparent' ? 'transparent' : canvasInfo.bgColor}_${aspectRatio}.png`.replace('#',''); // Clean filename
+
                         // Special handling for iOS devices
-                        if (isIOS) {
-                            // For iOS - try to use Share API if available (iOS 12+)
-                            if (navigator.share) {
+                        if (isIOS && navigator.share) {
+                           try {
                                 fetch(dataUrl)
                                     .then(res => res.blob())
                                     .then(blob => {
+                                        if (!blob) throw new Error("Failed to create blob");
                                         const file = new File([blob], filename, { type: 'image/png' });
                                         navigator.share({
                                             files: [file],
                                             title: filename
-                                        }).catch(() => {
-                                            // Fallback to normal download if share fails
-                                            window.location.href = dataUrl;
+                                        }).catch((error) => {
+                                            console.error('Share API failed:', error);
+                                            // Fallback to opening in new tab for long-press save
+                                            window.open(dataUrl, '_blank');
                                         });
+                                    }).catch(error => {
+                                        console.error('Fetch/Blob failed:', error);
+                                         window.open(dataUrl, '_blank'); // Fallback
                                     });
-                            } else {
-                                // Direct download for older iOS
-                                window.location.href = dataUrl;
-                            }
-                        } else {
+                           } catch (error) {
+                                console.error('Error preparing share data:', error);
+                                window.open(dataUrl, '_blank'); // Fallback
+                           }
+                        } else if (isIOS) {
+                            // Fallback for older iOS or if Share API fails initially: open in new tab
+                             window.open(dataUrl, '_blank');
+                        }
+                        else {
                             // For Android and other mobile browsers
                             const link = document.createElement('a');
                             link.download = filename;
@@ -293,23 +374,62 @@
 
         function resizeCanvases() {
             const container = document.querySelector('.container');
-            const width = Math.min(800, container.clientWidth);
-            const canvasWidth = (width > 600) ? 390 : width; // 390px for desktop, full width for mobile
-            
+            const totalWidth = Math.min(800, container.clientWidth);
+            const gap = 10; // Match CSS gap
+            const isSmallScreen = totalWidth <= 600;
+
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                canvas.style.width = `${canvasWidth}px`;
-                canvas.style.height = `${(canvasWidth * 720) / 1280}px`;
+                if (!canvas) return;
+
+                // Determine the display width for the canvas
+                const displayWidth = isSmallScreen
+                    ? totalWidth // Full width on small screens (CSS handles this mostly)
+                    : (totalWidth - gap) / 2; // Half width minus gap on larger screens
+
+                // Get native dimensions
+                const nativeWidth = canvas.width;
+                const nativeHeight = canvas.height;
+
+                // Calculate display height based on native aspect ratio
+                const displayHeight = (displayWidth * nativeHeight) / nativeWidth;
+
+                // Set the style dimensions
+                canvas.style.width = `${displayWidth}px`;
+                canvas.style.height = `${displayHeight}px`;
             });
-            
+
+            // Regenerate logos after resizing styles
             generateLogos();
         }
-        
+
         window.addEventListener('resize', resizeCanvases);
-        window.addEventListener('load', resizeCanvases);
-        
-        // Initial generation
-        generateLogos();
+        window.addEventListener('load', () => {
+             // Ensure images are loaded before first draw attempt if possible
+             let loadedCount = 0;
+             const totalImages = Object.keys(badgeImages).length;
+             const tryInitialDraw = () => {
+                loadedCount++;
+                if (loadedCount >= totalImages) {
+                    resizeCanvases(); // Call resize which calls generateLogos
+                }
+             }
+             Object.values(badgeImages).forEach(img => {
+                if (img.complete) {
+                    loadedCount++;
+                } else {
+                    img.onload = tryInitialDraw;
+                    img.onerror = tryInitialDraw; // Count errors too so it doesn't hang
+                }
+             });
+             if (loadedCount >= totalImages) {
+                 resizeCanvases(); // Draw immediately if all cached/loaded
+             }
+        });
+
+        // Initial generation call (might be superseded by load event)
+        // generateLogos(); // Removed to rely on load event ensuring images are ready
+
     </script>
 </body>
-</html> 
+</html>
