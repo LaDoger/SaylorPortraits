@@ -228,7 +228,6 @@
                     const maxIterations = 100;
 
                     while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) {
-                        // More aggressive reduction if height is the limiter
                         let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
                         fontSize *= scaleFactor * 0.98; // Reduce size proportionally, slight safety margin
                         fontSize = Math.max(fontSize, 10);
@@ -276,7 +275,6 @@
                     ctx.fillText(word, canvas.width/2, textY);
 
                     // --- Badge Drawing ---
-                    // Use a more consistent approach for badge positioning
                     const badgeHeight = fontSize * 0.6; // Badge height relative to font size
                     const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image (width/height)
                     const badgeWidth = badgeHeight * badgeAspectRatio;
@@ -289,19 +287,18 @@
                     // Start at canvas center, move to the right edge of the *centered input text*, then shift slightly left.
                     const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12);
 
-                    // *** FIXED Y POSITION CALCULATION FOR CROSS-PLATFORM CONSISTENCY ***
-                    // Use the same positioning approach across all platforms
-                    // Calculate vertical position based on font size, not text metrics which can vary
-                    // Use a percentage of font size for a consistent appearance
-                    
-                    // Estimate the cap height (height of capital letters) as a fraction of font size
-                    // This is more consistent across platforms than actualBoundingBox values
-                    const capHeight = fontSize * 0.7; // Approximate cap height
-                    
-                    // Position badge to align its bottom with a point slightly above text center line
-                    // This creates a more balanced appearance with badge near the top of the text
-                    const badgeY = textY - (capHeight / 2) - (fontSize * 0.18);
-                    
+                    // *** REFINED Y POSITION CALCULATION ***
+                    // textY is the vertical center baseline.
+                    // badgeHeight is the calculated height of the badge.
+                    // We want to position the badge so it aligns nicely below the text center.
+                    // Let's aim to place the *bottom* of the badge a small distance *below* textY.
+                    // A shift factor relative to fontSize determines this distance.
+                    const downwardShiftFactor = 0.08; // Adjusted slightly to push it down a bit more
+                    const badgeBottomY = textY + (fontSize * downwardShiftFactor);
+
+                    // Calculate the top Y coordinate needed for drawImage
+                    const badgeY = badgeBottomY - badgeHeight;
+
                     // Draw badge image
                     const badgeImg = badgeImages[canvasInfo.badge];
                     if (badgeImg.complete && badgeImg.naturalWidth > 0) { // Check if image loaded
@@ -312,12 +309,8 @@
                         }
                     } else if (!badgeImg.complete) {
                         badgeImg.onload = () => {
-                            // Check if canvas still exists in DOM in case of rapid changes
                             if (document.getElementById(canvasInfo.id)) {
-                                // Redraw *only this specific canvas* when its badge loads
-                                // Avoid triggering a full regeneration if possible
-                                // Simplified: just call generateLogos again, though less efficient
-                                generateLogos();
+                                generateLogos(); // Redraw necessary canvases on load
                             }
                         }
                     }
@@ -342,11 +335,9 @@
                     canvas.onclick = () => {
                         const dataUrl = canvas.toDataURL('image/png');
                         const word = document.getElementById('wordInput').value || 'Logo';
-                        // Include aspect ratio marker in filename for clarity
                         const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9';
                         const filename = `${word}_${canvasInfo.textColor}_on_${canvasInfo.bgColor === 'transparent' ? 'transparent' : canvasInfo.bgColor}_${aspectRatio}.png`.replace('#',''); // Clean filename
 
-                        // Special handling for iOS devices
                         if (isIOS && navigator.share) {
                            try {
                                 fetch(dataUrl)
@@ -359,7 +350,6 @@
                                             title: filename
                                         }).catch((error) => {
                                             console.error('Share API failed:', error);
-                                            // Fallback to opening in new tab for long-press save
                                             window.open(dataUrl, '_blank');
                                         });
                                     }).catch(error => {
@@ -371,11 +361,9 @@
                                 window.open(dataUrl, '_blank'); // Fallback
                            }
                         } else if (isIOS) {
-                            // Fallback for older iOS or if Share API fails initially: open in new tab
                              window.open(dataUrl, '_blank');
                         }
                         else {
-                            // For Android and other mobile browsers
                             const link = document.createElement('a');
                             link.download = filename;
                             link.href = dataUrl;
@@ -399,59 +387,51 @@
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
 
-                // Determine the display width for the canvas
                 const displayWidth = isSmallScreen
-                    ? totalWidth // Full width on small screens (CSS handles this mostly)
-                    : (totalWidth - gap) / 2; // Half width minus gap on larger screens
+                    ? totalWidth
+                    : (totalWidth - gap) / 2;
 
-                // Get native dimensions
                 const nativeWidth = canvas.width;
                 const nativeHeight = canvas.height;
-
-                // Calculate display height based on native aspect ratio
                 const displayHeight = (displayWidth * nativeHeight) / nativeWidth;
 
-                // Set the style dimensions
                 canvas.style.width = `${displayWidth}px`;
                 canvas.style.height = `${displayHeight}px`;
             });
 
-            // Regenerate logos after resizing styles
             generateLogos();
         }
 
         window.addEventListener('resize', resizeCanvases);
         window.addEventListener('load', () => {
-             // Ensure images are loaded before first draw attempt if possible
              let loadedCount = 0;
              const totalImages = Object.keys(badgeImages).length;
              const tryInitialDraw = () => {
                 loadedCount++;
                 if (loadedCount >= totalImages) {
-                    resizeCanvases(); // Call resize which calls generateLogos
+                    resizeCanvases();
                 }
              }
              Object.values(badgeImages).forEach(img => {
-                if (img.complete && img.naturalWidth > 0) { // Check if actually loaded
+                if (img.complete && img.naturalWidth > 0) {
                     loadedCount++;
                 } else {
                     img.onload = tryInitialDraw;
                     img.onerror = () => {
                          console.error(`Failed to load badge: ${img.src}`);
-                         tryInitialDraw(); // Count errors too so it doesn't hang
+                         tryInitialDraw();
                     }
                 }
              });
              if (loadedCount >= totalImages) {
-                 resizeCanvases(); // Draw immediately if all cached/loaded
+                 resizeCanvases();
              }
-             // Add a fallback timeout in case onload never fires for some reason
              setTimeout(() => {
                 if(loadedCount < totalImages) {
                     console.warn("Timeout waiting for images, attempting draw anyway.");
                     resizeCanvases();
                 }
-             }, 5000); // 5 second timeout
+             }, 5000);
         });
 
     </script>
