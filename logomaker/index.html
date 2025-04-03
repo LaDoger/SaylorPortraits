@@ -244,6 +244,7 @@
             text-decoration: underline;
         }
 
+        /* ----------- MOBILE STYLES ----------- */
         @media (max-width: 600px) {
             h2 {
                 font-size: 1.8em;
@@ -274,24 +275,32 @@
                 cursor: pointer;
             }
 
-            /* Mobile Ordering using grid order */
+            /* --- Mobile Ordering using grid order --- */
+            /* Keep top elements first */
             h2 { order: 1; }
             .text-input-wrapper { order: 2; }
-            .signature-input-wrapper { order: 3; } /* Correct order */
+            .signature-input-wrapper { order: 3; }
             .color-picker-container { order: 4; }
-            #canvas1 { order: 5; }
-            #canvas4 { order: 6; }
-            #canvas2 { order: 7; }
-            #canvas5 { order: 8; }
-            #canvas3 { order: 9; }
-            #canvas6 { order: 10; }
-            #canvas7 { order: 11; }
-            #canvas10 { order: 12; }
-            #canvas8 { order: 13; }
-            #canvas11 { order: 14; }
-            #canvas9 { order: 15; }
-            #canvas12 { order: 16; }
-            footer { order: 99; } /* Footer always last */
+
+            /* Canvas Ordering: Solid backgrounds first, then transparent */
+            /* Solid Backgrounds (16x9 then Square) */
+            #canvas1 { order: 5; } /* Black on Orange */
+            #canvas2 { order: 6; } /* Orange on White */
+            #canvas3 { order: 7; } /* White on Black */
+            #canvas7 { order: 8; } /* Square: Black on Orange */
+            #canvas8 { order: 9; } /* Square: Orange on White */
+            #canvas9 { order: 10; } /* Square: White on Black */
+
+            /* Transparent Backgrounds (16x9 then Square) */
+            #canvas4 { order: 11; } /* Black on Transparent */
+            #canvas5 { order: 12; } /* Orange on Transparent */
+            #canvas6 { order: 13; } /* White on Transparent */
+            #canvas10 { order: 14; } /* Square: Black on Transparent */
+            #canvas11 { order: 15; } /* Square: Orange on Transparent */
+            #canvas12 { order: 16; } /* Square: White on Transparent */
+
+            /* Footer always last */
+            footer { order: 99; }
 
             /* Ensure signature wrapper uses flex when visible on mobile too */
             .signature-input-wrapper.visible {
@@ -322,6 +331,7 @@
                 <input type="color" id="colorPicker3" value="#FFFFFF" title="Color 3 (Default White)" oninput="handleColorInput(this)">
             </label>
         </div>
+        <!-- Canvas Rows remain the same structurally -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
@@ -350,6 +360,7 @@
     </div>
 
     <script>
+        // --- JAVASCRIPT REMAINS EXACTLY THE SAME AS ORIGINAL VERSION 1 ---
         const COLOR_ROLE_1 = 'color1';
         const COLOR_ROLE_2 = 'color2';
         const COLOR_ROLE_3 = 'color3';
