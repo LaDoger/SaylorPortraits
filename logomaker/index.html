@@ -103,7 +103,7 @@
             border: none;
             outline: none;
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 16px; /* Default font size (prevents zoom on wordInput) */
             font-family: 'Lexend', sans-serif;
             font-weight: 400;
             text-align: center;
@@ -111,8 +111,9 @@
             line-height: normal; /* Reset line height for better centering */
         }
 
+        /* Specific styles for signature input (font-family, color) */
         .signature-input-wrapper input[type="text"]#signatureInput {
-            font-size: 14px;
+            font-size: 14px; /* Smaller size for desktop */
             font-family: 'Inter', sans-serif;
             color: #555;
         }
@@ -257,6 +258,11 @@
                 max-width: 100%; /* Allow full width on mobile */
             }
 
+            /* Prevent zoom on signature input by setting font-size >= 16px */
+            .signature-input-wrapper input[type="text"]#signatureInput {
+                font-size: 16px; /* Override desktop size for mobile */
+            }
+
             /* Use grid for mobile ordering */
             .container {
                 display: grid;
@@ -311,6 +317,7 @@
 </head>
 
 <body>
+    <!-- HTML and SCRIPT remain unchanged -->
     <div class="container" id="mainContainer">
         <h2>Strategy Logo Maker</h2>
         <div class="text-input-wrapper">
@@ -318,7 +325,7 @@
             <button id="signatureToggleBtn" title="Toggle Signature Input">📝</button>
         </div>
         <div class="signature-input-wrapper" id="signatureInputWrapper">
-            <input type="text" id="signatureInput" value="" placeholder="Add Signature..." oninput="generateLogos()">
+            <input type="text" id="signatureInput" value="" placeholder="Add signature..." oninput="generateLogos()">
         </div>
         <div class="color-picker-container">
             <label class="color-picker-label" id="labelPicker1">
@@ -331,7 +338,6 @@
                 <input type="color" id="colorPicker3" value="#FFFFFF" title="Color 3 (Default White)" oninput="handleColorInput(this)">
             </label>
         </div>
-        <!-- Canvas Rows remain the same structurally -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
@@ -360,7 +366,7 @@
     </div>
 
     <script>
-        // --- JAVASCRIPT REMAINS EXACTLY THE SAME AS ORIGINAL VERSION 1 ---
+        // --- JAVASCRIPT REMAINS EXACTLY THE SAME AS BEFORE ---
         const COLOR_ROLE_1 = 'color1';
         const COLOR_ROLE_2 = 'color2';
         const COLOR_ROLE_3 = 'color3';
@@ -385,11 +391,10 @@
         let symbolLoaded = false;
         symbolImg.onload = () => {
             symbolLoaded = true;
-            // Ensure initial draw happens only once symbol is loaded or page is fully loaded
              if (document.readyState === 'complete' || document.readyState === 'interactive') {
                 generateLogos();
             } else {
-                 window.initialDrawTriggered = true; // Mark that it needs drawing on load
+                 window.initialDrawTriggered = true;
             }
         };
         symbolImg.onerror = () => console.error("Failed to load symbol.png");
@@ -399,7 +404,7 @@
         const isMobile = () => window.innerWidth <= 600;
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         const mainContainer = document.getElementById('mainContainer');
-        window.initialDrawTriggered = false; // Used if symbol loads after initial page setup
+        window.initialDrawTriggered = false;
 
         const signatureToggleBtn = document.getElementById('signatureToggleBtn');
         const signatureInputWrapper = document.getElementById('signatureInputWrapper');
@@ -417,7 +422,6 @@
         function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
             if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
             try {
-                // Ensure offscreen canvas dimensions are positive integers
                 const osWidth = Math.max(1, Math.round(symbolWidth));
                 const osHeight = Math.max(1, Math.round(symbolHeight));
                 offscreenCanvas.width = osWidth;
@@ -428,11 +432,10 @@
                 offscreenCtx.globalCompositeOperation = 'source-in';
                 offscreenCtx.fillStyle = targetColor;
                 offscreenCtx.fillRect(0, 0, osWidth, osHeight);
-                offscreenCtx.globalCompositeOperation = 'source-over'; // Reset composite operation
+                offscreenCtx.globalCompositeOperation = 'source-over';
                 mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight);
             } catch (e) {
                 console.error("Error drawing symbol:", e);
-                // Reset composite operation in case of error
                 offscreenCtx.globalCompositeOperation = 'source-over';
             }
         }
@@ -454,31 +457,23 @@
             isSignatureVisible = !isSignatureVisible;
             signatureInputWrapper.classList.toggle('visible', isSignatureVisible);
             signatureToggleBtn.classList.toggle('active', isSignatureVisible);
-            // Only redraw if signature visibility changed *or* text exists
-            // This avoids redraws when hiding an empty signature field
             if (isSignatureVisible || signatureInput.value.trim() !== '') {
                  generateLogos();
             }
-            // Optional: Focus input when shown
-            // if (isSignatureVisible) {
-            //     signatureInput.focus();
-            // }
         }
 
 
         function generateLogos() {
-            // Delay drawing until symbol is loaded or considered loaded after timeout
              if (!symbolLoaded && !symbolImg.complete) {
                 console.log("Symbol not loaded yet, queuing draw.");
-                window.initialDrawTriggered = true; // Ensure it draws on load/timeout
+                window.initialDrawTriggered = true;
                 return;
             }
 
             requestAnimationFrame(() => {
                 const input = document.getElementById('wordInput').value;
-                const word = input ? input + "  " : ""; // Add space for symbol only if word exists
+                const word = input ? input + "  " : "";
                 const selectedColors = getSelectedColors();
-                // Get signature text ONLY if the input is visible
                 const signatureText = isSignatureVisible ? signatureInput.value.trim() : '';
 
                 canvases.forEach(canvasInfo => {
@@ -489,111 +484,90 @@
                     const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
                     const isSolidBackground = bgColor !== 'transparent';
 
-                    // Clear canvas
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw background if solid
                     if (isSolidBackground) {
                         ctx.fillStyle = bgColor;
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                     }
 
-                    // Draw main text and symbol
-                    if (word) { // Only draw if there's input text
+                    if (word) {
                         const maxWidth = canvas.width * 0.9;
-                        const maxHeight = canvas.height * 0.8; // Slightly less height allowance
-                        let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5); // Initial guess
+                        const maxHeight = canvas.height * 0.8;
+                        let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
                         let metrics, textWidth, textHeight;
                         let iterations = 0;
-                        const maxIterations = 50; // Prevent infinite loops
+                        const maxIterations = 50;
 
-                        // Function to set font and measure text
                         const setFontAndMeasure = (size) => {
                             ctx.font = `bold ${size}px Lexend`;
-                            ctx.letterSpacing = `${size * -0.1}px`; // Apply letter spacing before measure
+                            ctx.letterSpacing = `${size * -0.1}px`;
                             metrics = ctx.measureText(word);
-                            // Estimate height based on font size and ascent/descent if available
                             textHeight = (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2);
                             textWidth = metrics.width;
                         };
 
-                        // Initial sizing
                         setFontAndMeasure(fontSize);
 
-                        // Scale down if too large
                         while ((textWidth > maxWidth || textHeight > maxHeight) && fontSize > 10 && iterations < maxIterations) {
-                            // Scale based on the dimension that's overflowing the most
-                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98; // Reduce slightly more aggressively
-                            fontSize = Math.max(fontSize, 10); // Minimum font size
+                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98;
+                            fontSize = Math.max(fontSize, 10);
                             setFontAndMeasure(fontSize);
                             iterations++;
                         }
 
-                        // Optional: Scale up slightly if too small (less aggressive)
-                        iterations = 0; // Reset iteration count
+                        iterations = 0;
                          while (textWidth < maxWidth * 0.7 && textHeight < maxHeight * 0.7 && fontSize < Math.min(canvas.width, canvas.height) * 0.8 && iterations < maxIterations) {
                             let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                            // Only scale up if the factor is significantly larger than 1
                              if (scaleFactor < 1.05) break;
-                            fontSize *= Math.min(scaleFactor, 1.02); // Gentle scale up
+                            fontSize *= Math.min(scaleFactor, 1.02);
                             setFontAndMeasure(fontSize);
                             iterations++;
                         }
 
-                         // Final check to ensure it fits after potential scaling up
                          if (textWidth > maxWidth || textHeight > maxHeight) {
                              fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
                              setFontAndMeasure(fontSize);
                          }
 
 
-                        // --- Drawing ---
                         ctx.fillStyle = textColor;
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         const textY = canvas.height / 2;
 
-                        // Calculate symbol position relative to the measured text ('input', not 'word')
-                         ctx.font = `bold ${fontSize}px Lexend`; // Ensure font is set for measuring 'input'
-                         ctx.letterSpacing = `${fontSize * -0.1}px`; // Keep consistent letter spacing
+                         ctx.font = `bold ${fontSize}px Lexend`;
+                         ctx.letterSpacing = `${fontSize * -0.1}px`;
                          const inputMetrics = ctx.measureText(input);
-                         const inputActualWidth = inputMetrics.width; // Use measured width
+                         const inputActualWidth = inputMetrics.width;
 
-                        // Center the 'word' (text + space)
                         ctx.fillText(word, canvas.width / 2, textY);
 
-                         // Symbol dimensions based on final font size
                          const symbolHeight = fontSize * 0.6;
-                         const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || 534 / 889; // Use natural ratio, fallback
+                         const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || 534 / 889;
                          const symbolWidth = symbolHeight * symbolAspectRatio;
 
-                         // Position symbol after the measured 'input' text, centered vertically
-                         // X position: Center of canvas + half of input text width - adjustment for letter spacing influence
-                         const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1); // Adjust slightly left
-                         // Y position: Vertically aligned with text middle, shifted down slightly, then adjusted by symbol height
+                         const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
                          const downwardShiftFactor = 0.08;
                          const symbolBottomY = textY + (fontSize * downwardShiftFactor);
                          const symbolY = symbolBottomY - symbolHeight;
 
-                        // Draw the colorized symbol
                          if (symbolLoaded) {
                              drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
                          }
                     }
 
-                    // Draw signature if conditions met
-                    if (signatureText && isSolidBackground) { // Only draw if text exists and background is solid
-                        ctx.fillStyle = textColor; // Use main text color for signature
-                        ctx.font = '400 40px Inter'; // Signature font
+                    if (signatureText && isSolidBackground) {
+                        ctx.fillStyle = textColor;
+                        ctx.font = '400 40px Inter';
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'bottom';
-                        ctx.letterSpacing = '0px'; // Reset letter spacing for signature
-                        const padding = 30; // Padding from edges
+                        ctx.letterSpacing = '0px';
+                        const padding = 30;
                         const sigX = canvas.width - padding;
                         const sigY = canvas.height - padding;
                         ctx.fillText(signatureText, sigX, sigY);
                     }
-                    // Reset any context properties that might affect next draw
                     ctx.letterSpacing = '0px';
                 });
             });
@@ -604,14 +578,14 @@
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
-                canvas.onclick = null; // Remove previous listener
+                canvas.onclick = null;
 
                 if (isMobile()) {
-                    canvas.style.cursor = 'pointer'; // Add pointer cursor on mobile
+                    canvas.style.cursor = 'pointer';
                     canvas.onclick = () => {
                         try {
                             const dataUrl = canvas.toDataURL('image/png');
-                            const word = document.getElementById('wordInput').value.trim().replace(/[^a-z0-9]/gi, '-') || 'Logo'; // Sanitize filename part
+                            const word = document.getElementById('wordInput').value.trim().replace(/[^a-z0-9]/gi, '-') || 'Logo';
                             const aspectRatio = canvas.width === canvas.height ? 'SQ' : '16x9';
                             const selectedColors = getSelectedColors();
                             const textColor = selectedColors[canvasInfo.textColorRole];
@@ -619,14 +593,12 @@
                             const sigText = isSignatureVisible ? signatureInput.value.trim() : '';
                             const isSolidBg = bgColor !== 'transparent';
                             const sigPart = (sigText && isSolidBg) ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
-                            // Sanitize color codes for filename
                             const cleanTextColor = textColor.replace('#', '');
                             const cleanBgColor = bgColor === 'transparent' ? 'transp' : bgColor.replace('#', '');
 
                             const filename = `${word}_${cleanTextColor}-on-${cleanBgColor}_${aspectRatio}${sigPart}.png`;
 
                             if (isIOS && navigator.share) {
-                                // Use Share API on iOS if available
                                 fetch(dataUrl)
                                     .then(res => res.blob())
                                     .then(blob => {
@@ -636,24 +608,20 @@
                                         }
                                         navigator.share({
                                             files: [new File([blob], filename, { type: 'image/png' })],
-                                            title: filename // Optional title
+                                            title: filename
                                         })
                                         .catch(error => {
                                             console.error('Share API failed:', error);
-                                            // Fallback to opening in new tab if share fails
                                             window.open(dataUrl, '_blank');
                                         });
                                     })
                                     .catch(error => {
                                         console.error('Fetch/Blob/Share Setup failed:', error);
-                                        // Fallback for fetch/blob errors or if sharing isn't supported
                                         window.open(dataUrl, '_blank');
                                     });
                             } else if (isIOS) {
-                                // Fallback for older iOS or non-shareable scenarios: Open in new tab
                                 window.open(dataUrl, '_blank');
                             } else {
-                                // Standard download for non-iOS browsers
                                 const link = document.createElement('a');
                                 link.download = filename;
                                 link.href = dataUrl;
@@ -667,9 +635,7 @@
                         }
                     };
                 } else {
-                    // Optional: Add hover effect or title for desktop?
-                    canvas.style.cursor = ''; // Default cursor on desktop
-                    // Desktop could have right-click save, or a dedicated download button per canvas if needed.
+                    canvas.style.cursor = '';
                 }
             });
         }
@@ -677,8 +643,8 @@
 
         function resizeHandler() {
             const container = mainContainer;
-            const totalWidth = Math.min(800, container.clientWidth); // Max width constraint
-            const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 12; // Use var, fallback
+            const totalWidth = Math.min(800, container.clientWidth);
+            const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 12;
             const smallScreen = isMobile();
 
             canvases.forEach(canvasInfo => {
@@ -687,59 +653,49 @@
 
                 let canvasContainerWidth;
                  if (smallScreen) {
-                     // On mobile (grid), canvas takes full container width minus padding
                      canvasContainerWidth = container.clientWidth;
                  } else {
-                     // On desktop (flex rows), each canvas takes roughly half width minus gap
                      canvasContainerWidth = (totalWidth - gap) / 2;
                  }
 
-                const displayWidth = Math.max(10, Math.floor(canvasContainerWidth)); // Ensure positive integer width
-                const nativeRatio = canvas.height / canvas.width; // Use canvas element's dimensions
-                const displayHeight = Math.floor(displayWidth * nativeRatio); // Calculate height based on aspect ratio
+                const displayWidth = Math.max(10, Math.floor(canvasContainerWidth));
+                const nativeRatio = canvas.height / canvas.width;
+                const displayHeight = Math.floor(displayWidth * nativeRatio);
 
-                // Update display style size
                 canvas.style.width = `${displayWidth}px`;
                 canvas.style.height = `${displayHeight}px`;
             });
 
-            // Trigger redraw after resizing canvases
             generateLogos();
-            // Update click events based on new mobile status
             setupCanvasClickEvents();
         }
 
         // --- Initialization ---
         window.addEventListener('load', () => {
-             // Set initial state
              if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                  symbolLoaded = true;
              }
-             updatePickerBackgrounds(); // Set initial picker colors
-             resizeHandler(); // Initial layout and draw
+             updatePickerBackgrounds();
+             resizeHandler();
 
-             // Event Listeners
              signatureToggleBtn.addEventListener('click', toggleSignatureInput);
 
              let resizeTimeout;
              window.addEventListener('resize', () => {
                  clearTimeout(resizeTimeout);
                  resizeTimeout = setTimeout(() => {
-                     // Check mobile status again after resize might change it
                      resizeHandler();
-                 }, 150); // Debounce resize events
+                 }, 150);
              });
 
-             // Fallback timer in case symbol onload doesn't fire or is very slow
              setTimeout(() => {
                  if (!symbolLoaded) {
                      console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw.");
-                     symbolLoaded = true; // Assume it's loaded or failed, allow drawing
-                     generateLogos(); // Attempt draw anyway
+                     symbolLoaded = true;
+                     generateLogos();
                  }
-             }, 3000); // 3-second timeout
+             }, 3000);
 
-             // Ensure draw happens if symbol loaded after initial load event but before timeout
              if (window.initialDrawTriggered && symbolLoaded) {
                  generateLogos();
              }
