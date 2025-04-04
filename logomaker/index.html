@@ -28,6 +28,8 @@
             --standard-gap: 12px; /* Unified gap */
             --button-size: 24px;
             --button-margin: 6px;
+            /* NEW: Define size for swap buttons, can be same as toggle */
+            --swap-button-size: var(--button-size);
         }
 
         body {
@@ -171,7 +173,8 @@
 
         .color-picker-container {
             display: flex;
-            justify-content: space-between;
+            /* CHANGED: Center items to accommodate buttons better */
+            justify-content: center;
             align-items: center;
             width: 100%;
             max-width: 300px;
@@ -179,7 +182,10 @@
         }
 
         .color-picker-label {
-            flex: 1;
+            /* Adjust flex-basis or width if needed, flex:1 might be too wide now */
+            flex-grow: 1; /* Allow labels to grow */
+            flex-shrink: 1;
+            flex-basis: 0; /* Let flexbox determine base size */
             display: block; /* Keep display block */
             min-width: 0;
             /* Ensure label wrapper height matches input height for consistency */
@@ -198,6 +204,36 @@
             padding: 0;
             margin: 0;
         }
+
+        /* --- NEW: Swap Button Styling --- */
+        .swap-color-btn {
+            width: var(--swap-button-size);
+            height: var(--swap-button-size);
+            padding: 0;
+            border: 1px solid #ccc;
+            border-radius: calc(var(--border-radius) / 2.5);
+            background-color: #f0f0f0;
+            color: #555;
+            /* Increased font-size slightly for better emoji visibility */
+            font-size: 16px;
+            line-height: 1;
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+            font-weight: normal;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, border-color 0.2s;
+            flex-shrink: 0; /* Prevent shrinking */
+            /* No position:absolute needed */
+        }
+
+        .swap-color-btn:hover {
+            background-color: #e0e0e0;
+            border-color: #aaa;
+        }
+        /* --- END: Swap Button Styling --- */
+
 
         .canvas-row {
             display: flex;
@@ -256,6 +292,12 @@
             .signature-input-wrapper,
             .color-picker-container {
                 max-width: 100%; /* Allow full width on mobile */
+            }
+
+             /* Make color pickers slightly smaller on mobile to fit buttons */
+            .color-picker-label {
+                flex-basis: auto; /* Let flex determine size */
+                flex-grow: 0.8; /* Allow slightly less growth */
             }
 
             /* Prevent zoom on signature input by setting font-size >= 16px */
@@ -326,17 +368,21 @@
         <div class="signature-input-wrapper" id="signatureInputWrapper">
             <input type="text" id="signatureInput" value="" placeholder="Add signature..." oninput="generateLogos()">
         </div>
+        <!-- MODIFIED: Added swap buttons -->
         <div class="color-picker-container">
             <label class="color-picker-label" id="labelPicker1">
                 <input type="color" id="colorPicker1" value="#000000" title="Color 1 (Default Black)" oninput="handleColorInput(this)">
             </label>
+            <button class="swap-color-btn" id="swapColor12Btn" title="Swap Color 1 and 2">🔄</button>
             <label class="color-picker-label" id="labelPicker2">
                 <input type="color" id="colorPicker2" value="#FA660F" title="Color 2 (Default Orange)" oninput="handleColorInput(this)">
             </label>
+            <button class="swap-color-btn" id="swapColor23Btn" title="Swap Color 2 and 3">🔄</button>
             <label class="color-picker-label" id="labelPicker3">
                 <input type="color" id="colorPicker3" value="#FFFFFF" title="Color 3 (Default White)" oninput="handleColorInput(this)">
             </label>
         </div>
+        <!-- END MODIFICATION -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
@@ -414,6 +460,11 @@
     const signatureInput = document.getElementById('signatureInput');
     let isSignatureVisible = false;
 
+    // --- References to color pickers ---
+    const colorPicker1 = document.getElementById('colorPicker1');
+    const colorPicker2 = document.getElementById('colorPicker2');
+    const colorPicker3 = document.getElementById('colorPicker3');
+
     // --- Function to check iOS version and show warning ---
     function checkIOSVersionAndWarn() {
         const userAgent = navigator.userAgent;
@@ -433,7 +484,7 @@
                     }
                     // --- TEST WARNING: Check if version IS 18.4 ---
                     else if (majorVer === 18 && minorVer === 4) {
-                        alert("You are using iOS 18.4"); // Test message
+                        // alert("You are using iOS 18.4"); // Test message - REMOVED for production
                     }
                     // No alert for iOS 18.5+, 19+, etc.
                 } else {
@@ -448,10 +499,11 @@
 
 
     function getSelectedColors() {
+        // Read directly from elements now
         return {
-            [COLOR_ROLE_1]: document.getElementById('colorPicker1').value,
-            [COLOR_ROLE_2]: document.getElementById('colorPicker2').value,
-            [COLOR_ROLE_3]: document.getElementById('colorPicker3').value
+            [COLOR_ROLE_1]: colorPicker1.value,
+            [COLOR_ROLE_2]: colorPicker2.value,
+            [COLOR_ROLE_3]: colorPicker3.value
         };
     }
 
@@ -478,10 +530,10 @@
 
 
     function updatePickerBackgrounds() {
-        const colors = getSelectedColors();
-        document.getElementById('labelPicker1').style.setProperty('--bg-color', colors[COLOR_ROLE_1]);
-        document.getElementById('labelPicker2').style.setProperty('--bg-color', colors[COLOR_ROLE_2]);
-        document.getElementById('labelPicker3').style.setProperty('--bg-color', colors[COLOR_ROLE_3]);
+        // Use direct references to pickers
+        document.getElementById('labelPicker1').style.setProperty('--bg-color', colorPicker1.value);
+        document.getElementById('labelPicker2').style.setProperty('--bg-color', colorPicker2.value);
+        document.getElementById('labelPicker3').style.setProperty('--bg-color', colorPicker3.value);
     }
 
     function handleColorInput(inputElement) {
@@ -493,11 +545,26 @@
         isSignatureVisible = !isSignatureVisible;
         signatureInputWrapper.classList.toggle('visible', isSignatureVisible);
         signatureToggleBtn.classList.toggle('active', isSignatureVisible);
-        // Regenerate logos if the signature visibility changed or if it became visible
-        // OR if it was hidden but previously had text (to remove the text)
-        // Or even if it was hidden and empty, to ensure logos are cleared of signature
         generateLogos(); // Simplified logic: always regenerate on toggle
     }
+
+    // --- NEW: Swap Color Functions ---
+    function swapColors12() {
+        const tempColor = colorPicker1.value;
+        colorPicker1.value = colorPicker2.value;
+        colorPicker2.value = tempColor;
+        updatePickerBackgrounds();
+        generateLogos();
+    }
+
+    function swapColors23() {
+        const tempColor = colorPicker2.value;
+        colorPicker2.value = colorPicker3.value;
+        colorPicker3.value = tempColor;
+        updatePickerBackgrounds();
+        generateLogos();
+    }
+    // --- END: Swap Color Functions ---
 
 
     function generateLogos() {
@@ -511,7 +578,7 @@
         requestAnimationFrame(() => {
             const input = document.getElementById('wordInput').value;
             const word = input ? input + "  " : ""; // Add space for symbol if text exists
-            const selectedColors = getSelectedColors();
+            const selectedColors = getSelectedColors(); // Reads current values
             // Get signature text ONLY if the toggle is active
             const signatureText = isSignatureVisible ? signatureInput.value.trim() : '';
 
@@ -614,9 +681,8 @@
                         }
                 }
 
-                // Draw signature if enabled (now draws on solid AND transparent)
-                // ******** MODIFIED THIS BLOCK ********
-                if (signatureText) { // Check if signature should be shown *at all*
+                // Draw signature if enabled
+                if (signatureText) {
                     ctx.fillStyle = textColor; // Use the same color as main text for signature
                     ctx.font = '400 40px Inter'; // Signature font
                     ctx.textAlign = 'right';
@@ -627,8 +693,6 @@
                     const sigY = canvas.height - padding;
                     ctx.fillText(signatureText, sigX, sigY);
                 }
-                // ******** END MODIFICATION ********
-
                 // Reset letter spacing for subsequent draws (good practice)
                 ctx.letterSpacing = '0px';
             });
@@ -652,18 +716,13 @@
                         const selectedColors = getSelectedColors();
                         const textColor = selectedColors[canvasInfo.textColorRole];
                         const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                        // Check signature visibility *and* content for filename
                         const sigText = isSignatureVisible ? signatureInput.value.trim() : '';
-                        // Signature part added ONLY if signature is enabled, has text, AND background is NOT transparent
-                        // *** ADJUSTED FILENAME LOGIC: Signature part added if signature is enabled and has text, regardless of background ***
                         const sigPart = sigText ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
                         const cleanTextColor = textColor.replace('#', '');
                         const cleanBgColor = bgColor === 'transparent' ? 'transp' : bgColor.replace('#', '');
 
                         const filename = `${word}_${cleanTextColor}-on-${cleanBgColor}_${aspectRatio}${sigPart}.png`;
 
-
-                        // Use Share API on iOS if available (preferred for saving/sharing)
                         if (isIOS && navigator.share) {
                             fetch(dataUrl)
                                 .then(res => res.blob())
@@ -677,7 +736,7 @@
                                     }
                                     navigator.share({
                                         files: [file],
-                                        title: filename // Optional title
+                                        title: filename
                                     })
                                     .catch(error => {
                                         if (error.name !== 'AbortError') {
@@ -693,10 +752,8 @@
                                     window.open(dataUrl, '_blank');
                                 });
                         } else if (isIOS) {
-                            // Standard iOS fallback: Open image in new tab (user can long-press to save)
                             window.open(dataUrl, '_blank');
                         } else {
-                            // Standard download for non-iOS browsers
                             const link = document.createElement('a');
                             link.download = filename;
                             link.href = dataUrl;
@@ -710,7 +767,6 @@
                     }
                 };
             } else {
-                // Remove pointer cursor on desktop
                 canvas.style.cursor = '';
             }
         });
@@ -753,11 +809,8 @@
 
     // --- Initialization ---
     window.addEventListener('load', () => {
-            // --- Call the iOS version check on load ---
             checkIOSVersionAndWarn();
-            // --- END ---
 
-            // Double check symbol load state on window load
             if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                 symbolLoaded = true;
             }
@@ -767,25 +820,31 @@
             // Add signature toggle listener
             signatureToggleBtn.addEventListener('click', toggleSignatureInput);
 
+            // --- NEW: Add swap button listeners ---
+            const swapBtn12 = document.getElementById('swapColor12Btn');
+            const swapBtn23 = document.getElementById('swapColor23Btn');
+            if (swapBtn12) swapBtn12.addEventListener('click', swapColors12);
+            if (swapBtn23) swapBtn23.addEventListener('click', swapColors23);
+            // --- END: Add swap button listeners ---
+
             // Debounced resize listener
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    resizeHandler(); // Call resize handler after debounce period
-                }, 150); // 150ms debounce
+                    resizeHandler();
+                }, 150);
             });
 
-            // Fallback timeout in case onload/onerror don't fire correctly for the image
+            // Fallback timeout for symbol image load
             setTimeout(() => {
                 if (!symbolLoaded) {
                     console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw.");
-                    symbolLoaded = true; // Assume loaded (or failed) to allow drawing attempt
-                    if(window.initialDrawTriggered) generateLogos(); // Attempt draw if previously triggered
+                    symbolLoaded = true;
+                    if(window.initialDrawTriggered) generateLogos();
                 }
-            }, 3000); // 3 second timeout
+            }, 3000);
 
-            // If draw was attempted before symbol loaded, try again now if symbol is ready
             if (window.initialDrawTriggered && symbolLoaded) {
                 generateLogos();
             }
