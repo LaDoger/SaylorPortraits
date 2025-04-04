@@ -317,7 +317,6 @@
 </head>
 
 <body>
-    <!-- HTML and SCRIPT remain unchanged -->
     <div class="container" id="mainContainer">
         <h2>Strategy Logo Maker</h2>
         <div class="text-input-wrapper">
@@ -366,7 +365,6 @@
     </div>
 
     <script>
-        // --- JAVASCRIPT REMAINS EXACTLY THE SAME AS BEFORE ---
         const COLOR_ROLE_1 = 'color1';
         const COLOR_ROLE_2 = 'color2';
         const COLOR_ROLE_3 = 'color3';
@@ -394,7 +392,7 @@
              if (document.readyState === 'complete' || document.readyState === 'interactive') {
                 generateLogos();
             } else {
-                 window.initialDrawTriggered = true;
+                 window.initialDrawTriggered = true; // Set flag if document already loaded
             }
         };
         symbolImg.onerror = () => console.error("Failed to load symbol.png");
@@ -402,9 +400,16 @@
         const offscreenCanvas = document.createElement('canvas');
         const offscreenCtx = offscreenCanvas.getContext('2d');
         const isMobile = () => window.innerWidth <= 600;
+        // --- Enhanced iOS Check ---
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // --- NEW: Constants for Symbol Vertical Offset ---
+        // Factor of fontSize to shift the symbol *down* relative to text vertical center.
+        // Smaller number means higher position. Adjust IOS value as needed for Safari.
+        const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08; // Original value for non-iOS
+        const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;  // *** ADJUST THIS VALUE FOR iOS ***
+
         const mainContainer = document.getElementById('mainContainer');
-        window.initialDrawTriggered = false;
+        window.initialDrawTriggered = false; // Track if draw was attempted before load/symbol ready
 
         const signatureToggleBtn = document.getElementById('signatureToggleBtn');
         const signatureInputWrapper = document.getElementById('signatureInputWrapper');
@@ -432,11 +437,11 @@
                 offscreenCtx.globalCompositeOperation = 'source-in';
                 offscreenCtx.fillStyle = targetColor;
                 offscreenCtx.fillRect(0, 0, osWidth, osHeight);
-                offscreenCtx.globalCompositeOperation = 'source-over';
+                offscreenCtx.globalCompositeOperation = 'source-over'; // Reset
                 mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight);
             } catch (e) {
                 console.error("Error drawing symbol:", e);
-                offscreenCtx.globalCompositeOperation = 'source-over';
+                offscreenCtx.globalCompositeOperation = 'source-over'; // Ensure reset on error
             }
         }
 
@@ -457,22 +462,25 @@
             isSignatureVisible = !isSignatureVisible;
             signatureInputWrapper.classList.toggle('visible', isSignatureVisible);
             signatureToggleBtn.classList.toggle('active', isSignatureVisible);
-            if (isSignatureVisible || signatureInput.value.trim() !== '') {
+            // Regenerate logos if the signature visibility changed or if it became visible
+            // OR if it was hidden but previously had text (to remove the text)
+            if (isSignatureVisible || signatureInput.value.trim() !== '' || !isSignatureVisible) {
                  generateLogos();
             }
         }
 
 
         function generateLogos() {
-             if (!symbolLoaded && !symbolImg.complete) {
+             // Delay drawing if symbol isn't loaded yet
+             if (!symbolLoaded && (!symbolImg.complete || symbolImg.naturalWidth === 0)) {
                 console.log("Symbol not loaded yet, queuing draw.");
-                window.initialDrawTriggered = true;
+                window.initialDrawTriggered = true; // Mark that we *tried* to draw
                 return;
             }
 
             requestAnimationFrame(() => {
                 const input = document.getElementById('wordInput').value;
-                const word = input ? input + "  " : "";
+                const word = input ? input + "  " : ""; // Add space for symbol if text exists
                 const selectedColors = getSelectedColors();
                 const signatureText = isSignatureVisible ? signatureInput.value.trim() : '';
 
@@ -484,14 +492,18 @@
                     const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
                     const isSolidBackground = bgColor !== 'transparent';
 
+                    // Clear canvas
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                    // Draw background if solid
                     if (isSolidBackground) {
                         ctx.fillStyle = bgColor;
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                     }
 
+                    // Draw main text and symbol if input exists
                     if (word) {
+                        // --- Font Size Calculation (unchanged) ---
                         const maxWidth = canvas.width * 0.9;
                         const maxHeight = canvas.height * 0.8;
                         let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
@@ -501,73 +513,94 @@
 
                         const setFontAndMeasure = (size) => {
                             ctx.font = `bold ${size}px Lexend`;
-                            ctx.letterSpacing = `${size * -0.1}px`;
-                            metrics = ctx.measureText(word);
+                            ctx.letterSpacing = `${size * -0.1}px`; // Apply letter spacing for measurement
+                            metrics = ctx.measureText(word); // Measure with the trailing spaces
+                            // Use more robust height calculation if possible
                             textHeight = (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2);
                             textWidth = metrics.width;
                         };
 
                         setFontAndMeasure(fontSize);
 
+                        // Scale down if too big
                         while ((textWidth > maxWidth || textHeight > maxHeight) && fontSize > 10 && iterations < maxIterations) {
+                            // Aggressive scaling down factor
                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98;
-                            fontSize = Math.max(fontSize, 10);
+                            fontSize = Math.max(fontSize, 10); // Prevent font size from becoming too small
                             setFontAndMeasure(fontSize);
                             iterations++;
                         }
-
-                        iterations = 0;
+                         // Scale up slightly if too small (carefully)
+                         iterations = 0; // Reset iteration count for scaling up
                          while (textWidth < maxWidth * 0.7 && textHeight < maxHeight * 0.7 && fontSize < Math.min(canvas.width, canvas.height) * 0.8 && iterations < maxIterations) {
                             let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                             if (scaleFactor < 1.05) break;
-                            fontSize *= Math.min(scaleFactor, 1.02);
+                             if (scaleFactor < 1.05) break; // Don't scale up aggressively if already close
+                            fontSize *= Math.min(scaleFactor, 1.02); // Gentle scale up
                             setFontAndMeasure(fontSize);
                             iterations++;
                         }
-
+                         // Final check to ensure it fits after scaling up potentially
                          if (textWidth > maxWidth || textHeight > maxHeight) {
-                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight); // Final correction if needed
                              setFontAndMeasure(fontSize);
                          }
+                        // --- End Font Size Calculation ---
 
 
+                        // --- Draw Text ---
                         ctx.fillStyle = textColor;
                         ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        const textY = canvas.height / 2;
+                        ctx.textBaseline = 'middle'; // Align text vertically centered
+                        const textY = canvas.height / 2; // Center Y position
 
+                         // Set final font size and letter spacing *before* drawing text and calculating symbol position
                          ctx.font = `bold ${fontSize}px Lexend`;
-                         ctx.letterSpacing = `${fontSize * -0.1}px`;
+                         ctx.letterSpacing = `${fontSize * -0.1}px`; // Ensure spacing is applied for drawing
+
+                         // Measure only the *input* text width for precise symbol placement
                          const inputMetrics = ctx.measureText(input);
                          const inputActualWidth = inputMetrics.width;
 
+                         // Draw the text (including trailing spaces)
                         ctx.fillText(word, canvas.width / 2, textY);
 
-                         const symbolHeight = fontSize * 0.6;
-                         const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || 534 / 889;
+
+                        // --- Calculate Symbol Position & Draw ---
+                         const symbolHeight = fontSize * 0.6; // Symbol height relative to font size
+                         const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889); // Use fallback ratio
                          const symbolWidth = symbolHeight * symbolAspectRatio;
 
+                         // Calculate X position based on the *input* width, adjusting for letter spacing
+                         // The effective center of the input text needs to account for the letter spacing effect.
+                         // A simpler approximation: place it relative to the measured input width.
+                         // The '- (fontSize * 0.1)' roughly accounts for the negative letter spacing visually pushing the end point left.
                          const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
-                         const downwardShiftFactor = 0.08;
-                         const symbolBottomY = textY + (fontSize * downwardShiftFactor);
-                         const symbolY = symbolBottomY - symbolHeight;
 
+                         // --- MODIFIED: Calculate Y position using OS-specific factor ---
+                         const downwardShiftFactor = isIOS ? IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR : BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR;
+                         const symbolBottomY = textY + (fontSize * downwardShiftFactor); // Calculate bottom edge position
+                         const symbolY = symbolBottomY - symbolHeight; // Calculate top edge position (Y coordinate)
+                         // --- END MODIFICATION ---
+
+                         // Draw the colorized symbol
                          if (symbolLoaded) {
                              drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
                          }
                     }
 
+                    // Draw signature if enabled and background is solid
                     if (signatureText && isSolidBackground) {
-                        ctx.fillStyle = textColor;
-                        ctx.font = '400 40px Inter';
+                        ctx.fillStyle = textColor; // Use the same color as main text for signature
+                        ctx.font = '400 40px Inter'; // Signature font
                         ctx.textAlign = 'right';
                         ctx.textBaseline = 'bottom';
-                        ctx.letterSpacing = '0px';
-                        const padding = 30;
+                        ctx.letterSpacing = '0px'; // Reset letter spacing for signature
+                        const padding = 30; // Padding from edge
                         const sigX = canvas.width - padding;
                         const sigY = canvas.height - padding;
                         ctx.fillText(signatureText, sigX, sigY);
                     }
+                    // Reset letter spacing for subsequent draws (good practice)
                     ctx.letterSpacing = '0px';
                 });
             });
@@ -578,7 +611,7 @@
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
-                canvas.onclick = null;
+                canvas.onclick = null; // Remove previous listener
 
                 if (isMobile()) {
                     canvas.style.cursor = 'pointer';
@@ -598,30 +631,46 @@
 
                             const filename = `${word}_${cleanTextColor}-on-${cleanBgColor}_${aspectRatio}${sigPart}.png`;
 
+                            // Use Share API on iOS if available (preferred for saving/sharing)
                             if (isIOS && navigator.share) {
                                 fetch(dataUrl)
                                     .then(res => res.blob())
                                     .then(blob => {
                                         if (!blob) throw new Error("Blob creation failed");
-                                        if (!navigator.canShare || !navigator.canShare({ files: [new File([blob], filename, { type: 'image/png' })] })) {
-                                             throw new Error("Sharing not supported for this file type.");
+                                        const file = new File([blob], filename, { type: 'image/png' });
+                                        if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
+                                             // Fallback if sharing this specific file isn't supported
+                                             console.warn("Sharing PNG files might not be supported, falling back.");
+                                             window.open(dataUrl, '_blank');
+                                             return;
+                                            // throw new Error("Sharing not supported for this file type.");
                                         }
                                         navigator.share({
-                                            files: [new File([blob], filename, { type: 'image/png' })],
-                                            title: filename
+                                            files: [file],
+                                            title: filename // Optional title
                                         })
                                         .catch(error => {
-                                            console.error('Share API failed:', error);
-                                            window.open(dataUrl, '_blank');
+                                            // Handle errors (e.g., user cancellation)
+                                            // Don't automatically fallback on cancel, only on real errors
+                                            if (error.name !== 'AbortError') {
+                                                console.error('Share API failed:', error);
+                                                // Fallback to opening in new tab on share error
+                                                window.open(dataUrl, '_blank');
+                                            } else {
+                                                console.log('Share action cancelled by user.');
+                                            }
                                         });
                                     })
                                     .catch(error => {
                                         console.error('Fetch/Blob/Share Setup failed:', error);
+                                        // Fallback if blob creation or fetch fails
                                         window.open(dataUrl, '_blank');
                                     });
                             } else if (isIOS) {
+                                // Standard iOS fallback: Open image in new tab (user can long-press to save)
                                 window.open(dataUrl, '_blank');
                             } else {
+                                // Standard download for non-iOS browsers
                                 const link = document.createElement('a');
                                 link.download = filename;
                                 link.href = dataUrl;
@@ -635,6 +684,7 @@
                         }
                     };
                 } else {
+                    // Remove pointer cursor on desktop
                     canvas.style.cursor = '';
                 }
             });
@@ -642,10 +692,10 @@
 
 
         function resizeHandler() {
-            const container = mainContainer;
-            const totalWidth = Math.min(800, container.clientWidth);
+            const container = mainContainer; // Use the already defined mainContainer
+            const totalWidth = Math.min(800, container.clientWidth); // Max width or container width
             const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 12;
-            const smallScreen = isMobile();
+            const smallScreen = isMobile(); // Check if mobile based on width
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
@@ -653,49 +703,59 @@
 
                 let canvasContainerWidth;
                  if (smallScreen) {
+                     // On mobile (grid layout), each canvas takes full container width
                      canvasContainerWidth = container.clientWidth;
                  } else {
+                     // On desktop (flex layout), 2 canvases per row with gap
                      canvasContainerWidth = (totalWidth - gap) / 2;
                  }
 
-                const displayWidth = Math.max(10, Math.floor(canvasContainerWidth));
-                const nativeRatio = canvas.height / canvas.width;
+                // Calculate display dimensions based on container width and native ratio
+                const displayWidth = Math.max(10, Math.floor(canvasContainerWidth)); // Ensure minimum width
+                const nativeRatio = canvas.height / canvas.width; // Use native canvas dimensions for aspect ratio
                 const displayHeight = Math.floor(displayWidth * nativeRatio);
 
+                // Set the *style* dimensions for display
                 canvas.style.width = `${displayWidth}px`;
                 canvas.style.height = `${displayHeight}px`;
             });
 
+            // Regenerate logos and update click events after resizing
             generateLogos();
             setupCanvasClickEvents();
         }
 
         // --- Initialization ---
         window.addEventListener('load', () => {
+             // Double check symbol load state on window load
              if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                  symbolLoaded = true;
              }
-             updatePickerBackgrounds();
-             resizeHandler();
+             updatePickerBackgrounds(); // Set initial color picker backgrounds
+             resizeHandler(); // Initial resize and draw
 
+             // Add signature toggle listener
              signatureToggleBtn.addEventListener('click', toggleSignatureInput);
 
+             // Debounced resize listener
              let resizeTimeout;
              window.addEventListener('resize', () => {
                  clearTimeout(resizeTimeout);
                  resizeTimeout = setTimeout(() => {
-                     resizeHandler();
-                 }, 150);
+                     resizeHandler(); // Call resize handler after debounce period
+                 }, 150); // 150ms debounce
              });
 
+             // Fallback timeout in case onload/onerror don't fire correctly for the image
              setTimeout(() => {
                  if (!symbolLoaded) {
                      console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw.");
-                     symbolLoaded = true;
-                     generateLogos();
+                     symbolLoaded = true; // Assume loaded (or failed) to allow drawing attempt
+                     generateLogos(); // Attempt draw
                  }
-             }, 3000);
+             }, 3000); // 3 second timeout
 
+             // If draw was attempted before symbol loaded, try again now if symbol is ready
              if (window.initialDrawTriggered && symbolLoaded) {
                  generateLogos();
              }
