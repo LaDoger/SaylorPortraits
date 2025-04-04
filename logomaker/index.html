@@ -390,10 +390,10 @@
         symbolImg.onload = () => {
             symbolLoaded = true;
              if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                generateLogos();
-            } else {
-                 window.initialDrawTriggered = true; // Set flag if document already loaded
+                 // If document already loaded, trigger draw if needed
+                 if (window.initialDrawTriggered) generateLogos();
             }
+            // Don't need else block, listener will handle initial draw
         };
         symbolImg.onerror = () => console.error("Failed to load symbol.png");
 
@@ -403,8 +403,6 @@
         // --- Enhanced iOS Check ---
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         // --- NEW: Constants for Symbol Vertical Offset ---
-        // Factor of fontSize to shift the symbol *down* relative to text vertical center.
-        // Smaller number means higher position. Adjust IOS value as needed for Safari.
         const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08; // Original value for non-iOS
         const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;  // *** ADJUST THIS VALUE FOR iOS ***
 
@@ -415,6 +413,35 @@
         const signatureInputWrapper = document.getElementById('signatureInputWrapper');
         const signatureInput = document.getElementById('signatureInput');
         let isSignatureVisible = false;
+
+        // --- NEW: Function to check iOS version and show warning ---
+        function checkIOSVersionAndWarn() {
+            const userAgent = navigator.userAgent;
+            // Use the existing isIOS constant defined earlier
+            if (isIOS) {
+                // Regex to find iOS version (e.g., "OS 17_5_1", "OS 18_4")
+                const match = userAgent.match(/OS (\d+)_(\d+)(?:_(\d+))? like Mac OS X/);
+                if (match && match[1] && match[2]) {
+                    const majorVer = parseInt(match[1], 10);
+                    const minorVer = parseInt(match[2], 10);
+
+                    // Check if parsing was successful
+                    if (!isNaN(majorVer) && !isNaN(minorVer)) {
+                        // Check if version is less than 18.4
+                        if (majorVer < 18 || (majorVer === 18 && minorVer < 4)) {
+                            alert("Please upgrade to iOS 18.4. The logo will be rendered prettier!");
+                        }
+                        // No alert for iOS 18.4+, 19+, etc.
+                    } else {
+                        console.warn("Could not parse iOS version numbers from User Agent:", userAgent);
+                    }
+                } else {
+                    console.warn("Could not find iOS version pattern in User Agent:", userAgent);
+                }
+            }
+        }
+        // --- END NEW Function ---
+
 
         function getSelectedColors() {
             return {
@@ -524,7 +551,6 @@
 
                         // Scale down if too big
                         while ((textWidth > maxWidth || textHeight > maxHeight) && fontSize > 10 && iterations < maxIterations) {
-                            // Aggressive scaling down factor
                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98;
                             fontSize = Math.max(fontSize, 10); // Prevent font size from becoming too small
                             setFontAndMeasure(fontSize);
@@ -570,10 +596,6 @@
                          const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889); // Use fallback ratio
                          const symbolWidth = symbolHeight * symbolAspectRatio;
 
-                         // Calculate X position based on the *input* width, adjusting for letter spacing
-                         // The effective center of the input text needs to account for the letter spacing effect.
-                         // A simpler approximation: place it relative to the measured input width.
-                         // The '- (fontSize * 0.1)' roughly accounts for the negative letter spacing visually pushing the end point left.
                          const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
 
                          // --- MODIFIED: Calculate Y position using OS-specific factor ---
@@ -639,22 +661,17 @@
                                         if (!blob) throw new Error("Blob creation failed");
                                         const file = new File([blob], filename, { type: 'image/png' });
                                         if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
-                                             // Fallback if sharing this specific file isn't supported
                                              console.warn("Sharing PNG files might not be supported, falling back.");
                                              window.open(dataUrl, '_blank');
                                              return;
-                                            // throw new Error("Sharing not supported for this file type.");
                                         }
                                         navigator.share({
                                             files: [file],
                                             title: filename // Optional title
                                         })
                                         .catch(error => {
-                                            // Handle errors (e.g., user cancellation)
-                                            // Don't automatically fallback on cancel, only on real errors
                                             if (error.name !== 'AbortError') {
                                                 console.error('Share API failed:', error);
-                                                // Fallback to opening in new tab on share error
                                                 window.open(dataUrl, '_blank');
                                             } else {
                                                 console.log('Share action cancelled by user.');
@@ -663,7 +680,6 @@
                                     })
                                     .catch(error => {
                                         console.error('Fetch/Blob/Share Setup failed:', error);
-                                        // Fallback if blob creation or fetch fails
                                         window.open(dataUrl, '_blank');
                                     });
                             } else if (isIOS) {
@@ -727,6 +743,10 @@
 
         // --- Initialization ---
         window.addEventListener('load', () => {
+             // --- ADDED: Call the iOS version check on load ---
+             checkIOSVersionAndWarn();
+             // --- END ADDED ---
+
              // Double check symbol load state on window load
              if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                  symbolLoaded = true;
@@ -751,7 +771,7 @@
                  if (!symbolLoaded) {
                      console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw.");
                      symbolLoaded = true; // Assume loaded (or failed) to allow drawing attempt
-                     generateLogos(); // Attempt draw
+                     if(window.initialDrawTriggered) generateLogos(); // Attempt draw if previously triggered
                  }
              }, 3000); // 3 second timeout
 
