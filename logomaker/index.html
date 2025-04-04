@@ -23,13 +23,15 @@
         :root {
             --input-height: 44px;
             --input-border-width: 3px;
-            --input-padding: 10px; /* Padding inside the wrapper */
+            --input-padding: 10px; /* Padding inside the wrapper HORIZONTALLY */
             --border-radius: 8px;
             --standard-gap: 12px; /* Unified gap */
-            --button-size: 24px;
-            --button-margin: 6px;
-            /* NEW: Define size for swap buttons, can be same as toggle */
-            --swap-button-size: var(--button-size);
+            /* Removed button size variables, as they are auto now */
+            /* --button-margin: 6px; /* No longer needed for positioning */
+            /* Define emoji font size */
+            --emoji-button-font-size: 20px;
+            /* NEW: Define button offset from edge */
+            --emoji-button-edge-offset: 6px;
         }
 
         body {
@@ -50,8 +52,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: var(--standard-gap); /* Consistent gap for direct children */
-            flex-grow: 1; /* Pushes footer down if content is short */
+            gap: var(--standard-gap);
+            flex-grow: 1;
         }
 
         h2 {
@@ -60,7 +62,7 @@
             margin: 0;
             color: #FA660F;
             letter-spacing: -0.1em;
-            padding-bottom: 5px; /* Keep specific bottom padding for heading */
+            padding-bottom: 5px;
         }
 
         .text-input-wrapper,
@@ -75,16 +77,15 @@
             background-size: 100% 100%, 200% 100%;
             height: var(--input-height);
             position: relative;
-            /* Flexbox for vertical centering */
             display: flex;
             align-items: center;
-            padding: 0 var(--input-padding); /* Padding horizontal applied to wrapper */
+            /* Horizontal padding applied ONLY to wrapper, input fills it */
+            padding: 0 var(--input-padding);
         }
 
-        /* Specific background colors */
         .text-input-wrapper { --bg-color: #FFFFFF; }
         .signature-input-wrapper { --bg-color: #f8f8f8; }
-        .color-picker-label { padding: 0; } /* Color picker label needs no padding */
+        .color-picker-label { padding: 0; }
 
         @keyframes gradientShift {
             0% { background-position: 0% 0%, 0% 0%; }
@@ -94,28 +95,30 @@
         .text-input-wrapper {
             width: 100%;
             max-width: 300px;
+            /* position: relative; /* Already set */
         }
 
         /* Input text styling */
         .text-input-wrapper input[type="text"]#wordInput,
         .signature-input-wrapper input[type="text"]#signatureInput {
-            flex-grow: 1; /* Allow input to take available space */
-            height: auto; /* Let flexbox determine height */
+            flex-grow: 1;
+            height: 100%; /* Make input fill vertical space */
             background: transparent;
             border: none;
             outline: none;
             box-sizing: border-box;
-            font-size: 16px; /* Default font size (prevents zoom on wordInput) */
+            font-size: 16px;
             font-family: 'Lexend', sans-serif;
             font-weight: 400;
-            text-align: center;
-            /* Removed height: 100% and padding */
-            line-height: normal; /* Reset line height for better centering */
+            text-align: center; /* Keep centered */
+            line-height: normal;
+            /* REMOVED padding-right */
+            padding: 0; /* Remove all input padding, rely on wrapper padding */
+            width: 100%; /* Ensure it tries to fill width */
         }
 
-        /* Specific styles for signature input (font-family, color) */
         .signature-input-wrapper input[type="text"]#signatureInput {
-            font-size: 14px; /* Smaller size for desktop */
+            font-size: 14px;
             font-family: 'Inter', sans-serif;
             color: #555;
         }
@@ -124,19 +127,20 @@
             color: #aaa;
         }
 
-        #signatureToggleBtn {
-            position: absolute; /* Keep absolute for positioning within wrapper */
-            right: var(--button-margin);
+        /* --- MODIFIED: Emoji Button Base Styles --- */
+        .emoji-button {
+            position: absolute;
+            /* MODIFIED: Use variable for edge offset */
+            right: var(--emoji-button-edge-offset);
             top: 50%;
             transform: translateY(-50%);
-            width: var(--button-size);
-            height: var(--button-size);
-            padding: 0;
-            border: 1px solid #ccc;
-            border-radius: calc(var(--border-radius) / 2.5);
-            background-color: #f0f0f0;
+            width: auto;
+            height: auto;
+            padding: 2px;
+            border: none;
+            background: transparent;
             color: #555;
-            font-size: 14px;
+            font-size: var(--emoji-button-font-size);
             line-height: 1;
             font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
             font-weight: normal;
@@ -144,52 +148,51 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: opacity 0.2s;
             z-index: 2;
-            /* Make sure button doesn't stretch */
             flex-shrink: 0;
         }
 
-        #signatureToggleBtn:hover {
-            background-color: #e0e0e0;
-            border-color: #aaa;
+        .emoji-button:hover {
+           opacity: 0.7;
+        }
+
+        #signatureToggleBtn {
+           /* Inherits from .emoji-button */
         }
 
         #signatureToggleBtn.active {
-            background-color: #d0d0d0;
-            border-color: #888;
+           opacity: 1;
+           /* color: #FA660F; */
         }
 
         .signature-input-wrapper {
             width: 100%;
             max-width: 300px;
             display: none;
-            /* Removed margin-top, relying on container gap */
         }
 
         .signature-input-wrapper.visible {
-            display: flex; /* Use flex when visible for centering */
+            display: flex;
         }
 
         .color-picker-container {
             display: flex;
-            /* CHANGED: Center items to accommodate buttons better */
             justify-content: center;
             align-items: center;
             width: 100%;
             max-width: 300px;
-            gap: var(--standard-gap); /* Use standard gap */
+            gap: calc(var(--standard-gap) / 2);
         }
 
         .color-picker-label {
-            /* Adjust flex-basis or width if needed, flex:1 might be too wide now */
-            flex-grow: 1; /* Allow labels to grow */
+            flex-grow: 1;
             flex-shrink: 1;
-            flex-basis: 0; /* Let flexbox determine base size */
-            display: block; /* Keep display block */
+            flex-basis: 0;
+            display: block;
             min-width: 0;
-            /* Ensure label wrapper height matches input height for consistency */
             height: var(--input-height);
+            position: relative;
         }
 
         .color-picker-label input[type="color"] {
@@ -205,17 +208,16 @@
             margin: 0;
         }
 
-        /* --- NEW: Swap Button Styling --- */
         .swap-color-btn {
-            width: var(--swap-button-size);
-            height: var(--swap-button-size);
-            padding: 0;
-            border: 1px solid #ccc;
-            border-radius: calc(var(--border-radius) / 2.5);
-            background-color: #f0f0f0;
+            position: static;
+            transform: none;
+            width: auto;
+            height: auto;
+            padding: 2px;
+            border: none;
+            background: transparent;
             color: #555;
-            /* Increased font-size slightly for better emoji visibility */
-            font-size: 16px;
+            font-size: var(--emoji-button-font-size);
             line-height: 1;
             font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
             font-weight: normal;
@@ -223,28 +225,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s, border-color 0.2s;
-            flex-shrink: 0; /* Prevent shrinking */
-            /* No position:absolute needed */
+            transition: opacity 0.2s;
+            flex-shrink: 0;
         }
 
         .swap-color-btn:hover {
-            background-color: #e0e0e0;
-            border-color: #aaa;
+            opacity: 0.7;
         }
-        /* --- END: Swap Button Styling --- */
-
 
         .canvas-row {
             display: flex;
             flex-wrap: nowrap;
-            gap: var(--standard-gap); /* Use standard gap */
+            gap: var(--standard-gap);
             width: 100%;
-            max-width: 800px; /* Keep max-width for desktop */
+            max-width: 800px;
         }
 
         canvas {
-            width: 390px; /* Default width, will be adjusted by JS */
+            width: 390px;
             height: auto;
             border: 1px solid #ccc;
             display: block;
@@ -262,10 +260,9 @@
         footer {
             width: 100%;
             text-align: center;
-            padding: 0; /* Remove bottom padding here, body has it */
+            padding: 0;
             background-color: #FFFFFF;
             font-weight: 400;
-            /* Removed margin-top, relying on container gap */
         }
 
         footer a {
@@ -291,66 +288,62 @@
             .text-input-wrapper,
             .signature-input-wrapper,
             .color-picker-container {
-                max-width: 100%; /* Allow full width on mobile */
+                max-width: 100%;
             }
 
-             /* Make color pickers slightly smaller on mobile to fit buttons */
+            .color-picker-container {
+                gap: 5px;
+            }
+
             .color-picker-label {
-                flex-basis: auto; /* Let flex determine size */
-                flex-grow: 0.8; /* Allow slightly less growth */
+                flex-basis: auto;
+                flex-grow: 1;
             }
 
-            /* Prevent zoom on signature input by setting font-size >= 16px */
+             :root {
+                 --emoji-button-font-size: 22px; /* Slightly larger on mobile? */
+                 --emoji-button-edge-offset: 8px; /* Adjust offset for mobile if needed */
+             }
+
             .signature-input-wrapper input[type="text"]#signatureInput {
-                font-size: 16px; /* Override desktop size for mobile */
+                font-size: 16px;
             }
 
-            /* Use grid for mobile ordering */
             .container {
                 display: grid;
-                grid-template-columns: 1fr; /* Single column layout */
-                gap: var(--standard-gap); /* Consistent gap */
+                grid-template-columns: 1fr;
+                gap: var(--standard-gap);
             }
 
             .canvas-row {
-                display: contents; /* Let canvas elements be direct grid children */
+                display: contents;
             }
 
             canvas {
-                width: 100% !important; /* Force full width */
+                width: 100% !important;
                 max-width: 100%;
-                height: auto !important; /* Maintain aspect ratio */
+                height: auto !important;
                 cursor: pointer;
             }
 
-            /* --- Mobile Ordering using grid order --- */
-            /* Keep top elements first */
             h2 { order: 1; }
             .text-input-wrapper { order: 2; }
             .signature-input-wrapper { order: 3; }
             .color-picker-container { order: 4; }
-
-            /* Canvas Ordering: Solid backgrounds first, then transparent */
-            /* Solid Backgrounds (16x9 then Square) */
-            #canvas1 { order: 5; } /* Black on Orange */
-            #canvas2 { order: 6; } /* Orange on White */
-            #canvas3 { order: 7; } /* White on Black */
-            #canvas7 { order: 8; } /* Square: Black on Orange */
-            #canvas8 { order: 9; } /* Square: Orange on White */
-            #canvas9 { order: 10; } /* Square: White on Black */
-
-            /* Transparent Backgrounds (16x9 then Square) */
-            #canvas4 { order: 11; } /* Black on Transparent */
-            #canvas5 { order: 12; } /* Orange on Transparent */
-            #canvas6 { order: 13; } /* White on Transparent */
-            #canvas10 { order: 14; } /* Square: Black on Transparent */
-            #canvas11 { order: 15; } /* Square: Orange on Transparent */
-            #canvas12 { order: 16; } /* Square: White on Transparent */
-
-            /* Footer always last */
+            #canvas1 { order: 5; }
+            #canvas2 { order: 6; }
+            #canvas3 { order: 7; }
+            #canvas7 { order: 8; }
+            #canvas8 { order: 9; }
+            #canvas9 { order: 10; }
+            #canvas4 { order: 11; }
+            #canvas5 { order: 12; }
+            #canvas6 { order: 13; }
+            #canvas10 { order: 14; }
+            #canvas11 { order: 15; }
+            #canvas12 { order: 16; }
             footer { order: 99; }
 
-            /* Ensure signature wrapper uses flex when visible on mobile too */
             .signature-input-wrapper.visible {
                display: flex;
             }
@@ -362,13 +355,14 @@
     <div class="container" id="mainContainer">
         <h2>Strategy Logo Maker</h2>
         <div class="text-input-wrapper">
+            <!-- Input text should now center properly -->
             <input type="text" id="wordInput" value="More" placeholder="Enter text..." oninput="generateLogos()">
-            <button id="signatureToggleBtn" title="Add Signature">📝</button>
+            <!-- Button positioning controlled by CSS -->
+            <button class="emoji-button" id="signatureToggleBtn" title="Add Signature">📝</button>
         </div>
         <div class="signature-input-wrapper" id="signatureInputWrapper">
             <input type="text" id="signatureInput" value="" placeholder="Add signature..." oninput="generateLogos()">
         </div>
-        <!-- MODIFIED: Added swap buttons -->
         <div class="color-picker-container">
             <label class="color-picker-label" id="labelPicker1">
                 <input type="color" id="colorPicker1" value="#000000" title="Color 1 (Default Black)" oninput="handleColorInput(this)">
@@ -382,7 +376,6 @@
                 <input type="color" id="colorPicker3" value="#FFFFFF" title="Color 3 (Default White)" oninput="handleColorInput(this)">
             </label>
         </div>
-        <!-- END MODIFICATION -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
@@ -411,6 +404,7 @@
     </div>
 
 <script>
+    // NO CHANGES TO SCRIPT NEEDED
     const COLOR_ROLE_1 = 'color1';
     const COLOR_ROLE_2 = 'color2';
     const COLOR_ROLE_3 = 'color3';
@@ -436,57 +430,41 @@
     symbolImg.onload = () => {
         symbolLoaded = true;
             if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                // If document already loaded, trigger draw if needed
                 if (window.initialDrawTriggered) generateLogos();
         }
-        // Don't need else block, listener will handle initial draw
     };
     symbolImg.onerror = () => console.error("Failed to load symbol.png");
 
     const offscreenCanvas = document.createElement('canvas');
     const offscreenCtx = offscreenCanvas.getContext('2d');
     const isMobile = () => window.innerWidth <= 600;
-    // --- Enhanced iOS Check ---
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    // --- NEW: Constants for Symbol Vertical Offset ---
-    const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08; // Original value for non-iOS
-    const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;  // *** ADJUST THIS VALUE FOR iOS ***
+    const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08;
+    const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;
 
     const mainContainer = document.getElementById('mainContainer');
-    window.initialDrawTriggered = false; // Track if draw was attempted before load/symbol ready
+    window.initialDrawTriggered = false;
 
     const signatureToggleBtn = document.getElementById('signatureToggleBtn');
     const signatureInputWrapper = document.getElementById('signatureInputWrapper');
     const signatureInput = document.getElementById('signatureInput');
     let isSignatureVisible = false;
 
-    // --- References to color pickers ---
     const colorPicker1 = document.getElementById('colorPicker1');
     const colorPicker2 = document.getElementById('colorPicker2');
     const colorPicker3 = document.getElementById('colorPicker3');
 
-    // --- Function to check iOS version and show warning ---
     function checkIOSVersionAndWarn() {
         const userAgent = navigator.userAgent;
-        // Use the existing isIOS constant defined earlier
         if (isIOS) {
-            // Regex to find iOS version (e.g., "OS 17_5_1", "OS 18_4")
             const match = userAgent.match(/OS (\d+)_(\d+)(?:_(\d+))? like Mac OS X/);
             if (match && match[1] && match[2]) {
                 const majorVer = parseInt(match[1], 10);
                 const minorVer = parseInt(match[2], 10);
-
-                // Check if parsing was successful
                 if (!isNaN(majorVer) && !isNaN(minorVer)) {
-                    // Check if version is less than 18.4
                     if (majorVer < 18 || (majorVer === 18 && minorVer < 4)) {
                         alert("Please upgrade to iOS 18.4. The logo will be rendered prettier!");
                     }
-                    // --- TEST WARNING: Check if version IS 18.4 ---
-                    else if (majorVer === 18 && minorVer === 4) {
-                        // alert("You are using iOS 18.4"); // Test message - REMOVED for production
-                    }
-                    // No alert for iOS 18.5+, 19+, etc.
                 } else {
                     console.warn("Could not parse iOS version numbers from User Agent:", userAgent);
                 }
@@ -495,11 +473,8 @@
             }
         }
     }
-    // --- END Function ---
-
 
     function getSelectedColors() {
-        // Read directly from elements now
         return {
             [COLOR_ROLE_1]: colorPicker1.value,
             [COLOR_ROLE_2]: colorPicker2.value,
@@ -520,17 +495,15 @@
             offscreenCtx.globalCompositeOperation = 'source-in';
             offscreenCtx.fillStyle = targetColor;
             offscreenCtx.fillRect(0, 0, osWidth, osHeight);
-            offscreenCtx.globalCompositeOperation = 'source-over'; // Reset
+            offscreenCtx.globalCompositeOperation = 'source-over';
             mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight);
         } catch (e) {
             console.error("Error drawing symbol:", e);
-            offscreenCtx.globalCompositeOperation = 'source-over'; // Ensure reset on error
+            offscreenCtx.globalCompositeOperation = 'source-over';
         }
     }
 
-
     function updatePickerBackgrounds() {
-        // Use direct references to pickers
         document.getElementById('labelPicker1').style.setProperty('--bg-color', colorPicker1.value);
         document.getElementById('labelPicker2').style.setProperty('--bg-color', colorPicker2.value);
         document.getElementById('labelPicker3').style.setProperty('--bg-color', colorPicker3.value);
@@ -545,10 +518,9 @@
         isSignatureVisible = !isSignatureVisible;
         signatureInputWrapper.classList.toggle('visible', isSignatureVisible);
         signatureToggleBtn.classList.toggle('active', isSignatureVisible);
-        generateLogos(); // Simplified logic: always regenerate on toggle
+        generateLogos();
     }
 
-    // --- NEW: Swap Color Functions ---
     function swapColors12() {
         const tempColor = colorPicker1.value;
         colorPicker1.value = colorPicker2.value;
@@ -564,22 +536,18 @@
         updatePickerBackgrounds();
         generateLogos();
     }
-    // --- END: Swap Color Functions ---
-
 
     function generateLogos() {
-            // Delay drawing if symbol isn't loaded yet
             if (!symbolLoaded && (!symbolImg.complete || symbolImg.naturalWidth === 0)) {
             console.log("Symbol not loaded yet, queuing draw.");
-            window.initialDrawTriggered = true; // Mark that we *tried* to draw
+            window.initialDrawTriggered = true;
             return;
         }
 
         requestAnimationFrame(() => {
             const input = document.getElementById('wordInput').value;
-            const word = input ? input + "  " : ""; // Add space for symbol if text exists
-            const selectedColors = getSelectedColors(); // Reads current values
-            // Get signature text ONLY if the toggle is active
+            const word = input ? input + "  " : "";
+            const selectedColors = getSelectedColors();
             const signatureText = isSignatureVisible ? signatureInput.value.trim() : '';
 
             canvases.forEach(canvasInfo => {
@@ -588,20 +556,16 @@
                 const ctx = canvas.getContext('2d');
                 const textColor = selectedColors[canvasInfo.textColorRole];
                 const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                const isSolidBackground = bgColor !== 'transparent'; // Still useful for filename logic later
+                const isSolidBackground = bgColor !== 'transparent';
 
-                // Clear canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Draw background if solid
-                if (isSolidBackground) { // Check remains here for background drawing
+                if (isSolidBackground) {
                     ctx.fillStyle = bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
 
-                // Draw main text and symbol if input exists
                 if (word) {
-                    // --- Font Size Calculation (unchanged) ---
                     const maxWidth = canvas.width * 0.9;
                     const maxHeight = canvas.height * 0.8;
                     let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
@@ -611,100 +575,80 @@
 
                     const setFontAndMeasure = (size) => {
                         ctx.font = `bold ${size}px Lexend`;
-                        ctx.letterSpacing = `${size * -0.1}px`; // Apply letter spacing for measurement
-                        metrics = ctx.measureText(word); // Measure with the trailing spaces
-                        // Use more robust height calculation if possible
+                        ctx.letterSpacing = `${size * -0.1}px`;
+                        metrics = ctx.measureText(word);
                         textHeight = (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2);
                         textWidth = metrics.width;
                     };
 
                     setFontAndMeasure(fontSize);
 
-                    // Scale down if too big
                     while ((textWidth > maxWidth || textHeight > maxHeight) && fontSize > 10 && iterations < maxIterations) {
                         fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98;
-                        fontSize = Math.max(fontSize, 10); // Prevent font size from becoming too small
+                        fontSize = Math.max(fontSize, 10);
                         setFontAndMeasure(fontSize);
                         iterations++;
                     }
-                        // Scale up slightly if too small (carefully)
-                        iterations = 0; // Reset iteration count for scaling up
+                        iterations = 0;
                         while (textWidth < maxWidth * 0.7 && textHeight < maxHeight * 0.7 && fontSize < Math.min(canvas.width, canvas.height) * 0.8 && iterations < maxIterations) {
                         let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                            if (scaleFactor < 1.05) break; // Don't scale up aggressively if already close
-                        fontSize *= Math.min(scaleFactor, 1.02); // Gentle scale up
+                            if (scaleFactor < 1.05) break;
+                        fontSize *= Math.min(scaleFactor, 1.02);
                         setFontAndMeasure(fontSize);
                         iterations++;
                     }
-                        // Final check to ensure it fits after scaling up potentially
                         if (textWidth > maxWidth || textHeight > maxHeight) {
-                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight); // Final correction if needed
+                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
                             setFontAndMeasure(fontSize);
                         }
-                    // --- End Font Size Calculation ---
 
-
-                    // --- Draw Text ---
                     ctx.fillStyle = textColor;
                     ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle'; // Align text vertically centered
-                    const textY = canvas.height / 2; // Center Y position
+                    ctx.textBaseline = 'middle';
+                    const textY = canvas.height / 2;
 
-                        // Set final font size and letter spacing *before* drawing text and calculating symbol position
                         ctx.font = `bold ${fontSize}px Lexend`;
-                        ctx.letterSpacing = `${fontSize * -0.1}px`; // Ensure spacing is applied for drawing
+                        ctx.letterSpacing = `${fontSize * -0.1}px`;
 
-                        // Measure only the *input* text width for precise symbol placement
                         const inputMetrics = ctx.measureText(input);
                         const inputActualWidth = inputMetrics.width;
 
-                        // Draw the text (including trailing spaces)
                     ctx.fillText(word, canvas.width / 2, textY);
 
-
-                    // --- Calculate Symbol Position & Draw ---
-                        const symbolHeight = fontSize * 0.6; // Symbol height relative to font size
-                        const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889); // Use fallback ratio
+                        const symbolHeight = fontSize * 0.6;
+                        const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889);
                         const symbolWidth = symbolHeight * symbolAspectRatio;
-
                         const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
-
-                        // --- MODIFIED: Calculate Y position using OS-specific factor ---
                         const downwardShiftFactor = isIOS ? IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR : BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR;
-                        const symbolBottomY = textY + (fontSize * downwardShiftFactor); // Calculate bottom edge position
-                        const symbolY = symbolBottomY - symbolHeight; // Calculate top edge position (Y coordinate)
-                        // --- END MODIFICATION ---
+                        const symbolBottomY = textY + (fontSize * downwardShiftFactor);
+                        const symbolY = symbolBottomY - symbolHeight;
 
-                        // Draw the colorized symbol
                         if (symbolLoaded) {
                             drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
                         }
                 }
 
-                // Draw signature if enabled
                 if (signatureText) {
-                    ctx.fillStyle = textColor; // Use the same color as main text for signature
-                    ctx.font = '400 40px Inter'; // Signature font
+                    ctx.fillStyle = textColor;
+                    ctx.font = '400 40px Inter';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'bottom';
-                    ctx.letterSpacing = '0px'; // Reset letter spacing for signature
-                    const padding = 30; // Padding from edge
+                    ctx.letterSpacing = '0px';
+                    const padding = 30;
                     const sigX = canvas.width - padding;
                     const sigY = canvas.height - padding;
                     ctx.fillText(signatureText, sigX, sigY);
                 }
-                // Reset letter spacing for subsequent draws (good practice)
                 ctx.letterSpacing = '0px';
             });
         });
     }
 
-
     function setupCanvasClickEvents() {
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
             if (!canvas) return;
-            canvas.onclick = null; // Remove previous listener
+            canvas.onclick = null;
 
             if (isMobile()) {
                 canvas.style.cursor = 'pointer';
@@ -720,7 +664,6 @@
                         const sigPart = sigText ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
                         const cleanTextColor = textColor.replace('#', '');
                         const cleanBgColor = bgColor === 'transparent' ? 'transp' : bgColor.replace('#', '');
-
                         const filename = `${word}_${cleanTextColor}-on-${cleanBgColor}_${aspectRatio}${sigPart}.png`;
 
                         if (isIOS && navigator.share) {
@@ -734,17 +677,12 @@
                                             window.open(dataUrl, '_blank');
                                             return;
                                     }
-                                    navigator.share({
-                                        files: [file],
-                                        title: filename
-                                    })
+                                    navigator.share({ files: [file], title: filename })
                                     .catch(error => {
                                         if (error.name !== 'AbortError') {
                                             console.error('Share API failed:', error);
                                             window.open(dataUrl, '_blank');
-                                        } else {
-                                            console.log('Share action cancelled by user.');
-                                        }
+                                        } else { console.log('Share action cancelled by user.'); }
                                     });
                                 })
                                 .catch(error => {
@@ -772,12 +710,11 @@
         });
     }
 
-
     function resizeHandler() {
-        const container = mainContainer; // Use the already defined mainContainer
-        const totalWidth = Math.min(800, container.clientWidth); // Max width or container width
+        const container = mainContainer;
+        const totalWidth = Math.min(800, container.clientWidth);
         const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 12;
-        const smallScreen = isMobile(); // Check if mobile based on width
+        const smallScreen = isMobile();
 
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
@@ -785,49 +722,39 @@
 
             let canvasContainerWidth;
                 if (smallScreen) {
-                    // On mobile (grid layout), each canvas takes full container width
                     canvasContainerWidth = container.clientWidth;
                 } else {
-                    // On desktop (flex layout), 2 canvases per row with gap
                     canvasContainerWidth = (totalWidth - gap) / 2;
                 }
 
-            // Calculate display dimensions based on container width and native ratio
-            const displayWidth = Math.max(10, Math.floor(canvasContainerWidth)); // Ensure minimum width
-            const nativeRatio = canvas.height / canvas.width; // Use native canvas dimensions for aspect ratio
+            const displayWidth = Math.max(10, Math.floor(canvasContainerWidth));
+            const nativeRatio = canvas.height / canvas.width;
             const displayHeight = Math.floor(displayWidth * nativeRatio);
 
-            // Set the *style* dimensions for display
             canvas.style.width = `${displayWidth}px`;
             canvas.style.height = `${displayHeight}px`;
         });
 
-        // Regenerate logos and update click events after resizing
         generateLogos();
         setupCanvasClickEvents();
     }
 
-    // --- Initialization ---
     window.addEventListener('load', () => {
             checkIOSVersionAndWarn();
 
             if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                 symbolLoaded = true;
             }
-            updatePickerBackgrounds(); // Set initial color picker backgrounds
-            resizeHandler(); // Initial resize and draw
+            updatePickerBackgrounds();
+            resizeHandler();
 
-            // Add signature toggle listener
             signatureToggleBtn.addEventListener('click', toggleSignatureInput);
 
-            // --- NEW: Add swap button listeners ---
             const swapBtn12 = document.getElementById('swapColor12Btn');
             const swapBtn23 = document.getElementById('swapColor23Btn');
             if (swapBtn12) swapBtn12.addEventListener('click', swapColors12);
             if (swapBtn23) swapBtn23.addEventListener('click', swapColors23);
-            // --- END: Add swap button listeners ---
 
-            // Debounced resize listener
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
@@ -836,7 +763,6 @@
                 }, 150);
             });
 
-            // Fallback timeout for symbol image load
             setTimeout(() => {
                 if (!symbolLoaded) {
                     console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw.");
