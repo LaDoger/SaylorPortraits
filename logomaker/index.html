@@ -61,8 +61,10 @@
             padding-bottom: 5px;
         }
 
+        /* Shared style for text-based input wrappers */
         .text-input-wrapper,
         .signature-input-wrapper,
+        .image-url-input-wrapper, /* Added */
         .color-picker-label {
             box-sizing: border-box;
             border: var(--input-border-width) solid transparent;
@@ -79,7 +81,8 @@
         }
 
         .text-input-wrapper { --bg-color: #FFFFFF; }
-        .signature-input-wrapper { --bg-color: #f8f8f8; }
+        .signature-input-wrapper,
+        .image-url-input-wrapper { --bg-color: #f8f8f8; } /* Added */
         .color-picker-label { padding: 0; }
 
         @keyframes gradientShift {
@@ -87,13 +90,16 @@
             100% { background-position: 0% 0%, 200% 0%; }
         }
 
-        .text-input-wrapper {
+        .text-input-wrapper,
+        .signature-input-wrapper,
+        .image-url-input-wrapper { /* Added */
             width: 100%;
             max-width: 300px;
         }
 
         .text-input-wrapper input[type="text"]#wordInput,
-        .signature-input-wrapper input[type="text"]#signatureInput {
+        .signature-input-wrapper input[type="text"]#signatureInput,
+        .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
             flex-grow: 1;
             height: 100%;
             background: transparent;
@@ -109,13 +115,15 @@
             width: 100%;
         }
 
-        .signature-input-wrapper input[type="text"]#signatureInput {
+        .signature-input-wrapper input[type="text"]#signatureInput,
+        .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
             font-size: 14px;
             font-family: 'Inter', sans-serif;
             color: #555;
         }
 
-        .signature-input-wrapper input[type="text"]::placeholder {
+        .signature-input-wrapper input[type="text"]::placeholder,
+        .image-url-input-wrapper input[type="text"]::placeholder { /* Added */
             color: #aaa;
         }
 
@@ -147,8 +155,9 @@
            opacity: 0.7;
         }
 
-        /* --- Taken from V2: Hide signature and color options by default --- */
+        /* Hide signature, image URL, and color options by default */
         .signature-input-wrapper,
+        .image-url-input-wrapper, /* Added */
         #colorOptionsContainer {
             width: 100%;
             max-width: 300px;
@@ -157,18 +166,16 @@
 
         /* Show when .visible class is added */
         .signature-input-wrapper.visible,
+        .image-url-input-wrapper.visible, /* Added */
         #colorOptionsContainer.visible {
             display: flex;
         }
-        /* --- END V2 Section --- */
+        /* --- END Hidden Options Section --- */
 
         .color-picker-container {
             /* Now targeted by ID for hiding/showing */
-            /* display: flex; */ /* Moved to #colorOptionsContainer.visible */
             justify-content: center;
             align-items: center;
-            /* width: 100%; */ /* Moved to #colorOptionsContainer */
-            /* max-width: 300px; */ /* Moved to #colorOptionsContainer */
             gap: calc(var(--standard-gap) / 2);
         }
 
@@ -236,10 +243,12 @@
         }
 
         .transparent-bg {
-            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
-                              linear-gradient(-45deg, #ccc 25%, transparent 25%),
-                              linear-gradient(45deg, transparent 75%, #ccc 75%),
-                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            /* This class now ONLY provides the visual checkerboard for the ELEMENT
+               if the canvas itself is drawn transparently (no color, no image bg) */
+            background-image: linear-gradient(45deg, #eee 25%, transparent 25%),
+                              linear-gradient(-45deg, #eee 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #eee 75%),
+                              linear-gradient(-45deg, transparent 75%, #eee 75%);
             background-size: 20px 20px;
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
@@ -275,6 +284,7 @@
 
             .text-input-wrapper,
             .signature-input-wrapper, /* Still apply max-width when visible */
+            .image-url-input-wrapper, /* Added */
             #colorOptionsContainer { /* Still apply max-width when visible */
                 max-width: 100%;
             }
@@ -294,7 +304,8 @@
                  --emoji-button-edge-offset: 8px;
              }
 
-            .signature-input-wrapper input[type="text"]#signatureInput {
+            .signature-input-wrapper input[type="text"]#signatureInput,
+            .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
                 font-size: 16px;
             }
 
@@ -309,21 +320,22 @@
             .text-input-wrapper { order: 2; }
             /* Hidden elements still need order to maintain flow when shown */
             .signature-input-wrapper { order: 3; }
-            #colorOptionsContainer { order: 4; }
+            .image-url-input-wrapper { order: 4; } /* Added */
+            #colorOptionsContainer { order: 5; } /* Adjusted order */
 
             /* *** MODIFIED CANVAS ORDER for Mobile: Solid Backgrounds First *** */
-            #canvas1 { order: 5; }  /* Solid */
-            #canvas2 { order: 6; }  /* Solid */
-            #canvas3 { order: 7; }  /* Solid */
-            #canvas7 { order: 8; }  /* Solid */
-            #canvas8 { order: 9; }  /* Solid */
-            #canvas9 { order: 10; } /* Solid */
-            #canvas4 { order: 11; } /* Transparent */
-            #canvas5 { order: 12; } /* Transparent */
-            #canvas6 { order: 13; } /* Transparent */
-            #canvas10 { order: 14; } /* Transparent */
-            #canvas11 { order: 15; } /* Transparent */
-            #canvas12 { order: 16; } /* Transparent */
+            #canvas1 { order: 6; }  /* Solid Color / Image */
+            #canvas2 { order: 7; }  /* Solid Color / Image */
+            #canvas3 { order: 8; }  /* Solid Color / Image */
+            #canvas7 { order: 9; }  /* Solid Color / Image */
+            #canvas8 { order: 10; } /* Solid Color / Image */
+            #canvas9 { order: 11; } /* Solid Color / Image */
+            #canvas4 { order: 12; } /* Transparent / Image */
+            #canvas5 { order: 13; } /* Transparent / Image */
+            #canvas6 { order: 14; } /* Transparent / Image */
+            #canvas10 { order: 15; }/* Transparent / Image */
+            #canvas11 { order: 16; }/* Transparent / Image */
+            #canvas12 { order: 17; }/* Transparent / Image */
             /* *** END MODIFIED CANVAS ORDER *** */
 
             footer { order: 99; }
@@ -348,14 +360,21 @@
         <h2>Strategy Logo Maker</h2>
         <div class="text-input-wrapper">
             <input type="text" id="wordInput" value="Strategy" placeholder="Enter text..." oninput="generateLogos()">
-            <!-- Using V2's single toggle button -->
             <button class="emoji-button" id="optionsToggleBtn" title="Show/Hide Options">🔽</button>
         </div>
-        <!-- Starts hidden (V2 style) -->
+
+        <!-- Starts hidden -->
         <div class="signature-input-wrapper" id="signatureInputWrapper">
             <input type="text" id="signatureInput" placeholder="Add signature..." oninput="generateLogos()">
         </div>
-        <!-- Starts hidden (V2 style) -->
+
+        <!-- NEW: Starts hidden -->
+        <div class="image-url-input-wrapper" id="bgImageUrlWrapper">
+             <!-- Changed placeholder text below -->
+             <input type="text" id="bgImageUrlInput" placeholder="Background: Paste image or image URL" oninput="handleBgImageInput()">
+        </div>
+
+        <!-- Starts hidden -->
         <div class="color-picker-container" id="colorOptionsContainer">
             <label class="color-picker-label" id="labelPicker1">
                 <input type="color" id="colorPicker1" value="#000000" title="Color 1 (Default Black)" oninput="handleColorInput(this)">
@@ -369,6 +388,7 @@
                 <input type="color" id="colorPicker3" value="#FFFFFF" title="Color 3 (Default White)" oninput="handleColorInput(this)">
             </label>
         </div>
+
         <!-- Canvas Structure Remains the Same -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
@@ -398,24 +418,29 @@
     </div>
 
 <script>
-    // Using JavaScript from Version 2 - no changes needed here for the requested features
     const COLOR_ROLE_1 = 'color1';
     const COLOR_ROLE_2 = 'color2';
     const COLOR_ROLE_3 = 'color3';
 
     const canvases = [
-        { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 },   // Solid
-        { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' }, // Transparent
-        { id: 'canvas2', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 },   // Solid
-        { id: 'canvas5', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' }, // Transparent
-        { id: 'canvas3', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 },   // Solid
-        { id: 'canvas6', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' }, // Transparent
-        { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 },   // Solid
-        { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },// Transparent
-        { id: 'canvas8', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 },   // Solid
-        { id: 'canvas11', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },// Transparent
-        { id: 'canvas9', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 },   // Solid
-        { id: 'canvas12', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' } // Transparent
+        // Row 1
+        { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2, isOriginallyTransparent: false },
+        { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent', isOriginallyTransparent: true },
+        // Row 2
+        { id: 'canvas2', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3, isOriginallyTransparent: false },
+        { id: 'canvas5', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent', isOriginallyTransparent: true },
+        // Row 3
+        { id: 'canvas3', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1, isOriginallyTransparent: false },
+        { id: 'canvas6', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent', isOriginallyTransparent: true },
+        // Row 4 (Square)
+        { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2, isOriginallyTransparent: false },
+        { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent', isOriginallyTransparent: true },
+        // Row 5 (Square)
+        { id: 'canvas8', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3, isOriginallyTransparent: false },
+        { id: 'canvas11', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent', isOriginallyTransparent: true },
+        // Row 6 (Square)
+        { id: 'canvas9', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1, isOriginallyTransparent: false },
+        { id: 'canvas12', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent', isOriginallyTransparent: true }
     ];
 
     const symbolImg = new Image();
@@ -424,7 +449,6 @@
     symbolImg.onload = () => {
         symbolLoaded = true;
             if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                // Only trigger initial draw if it was queued AND symbol is now loaded
                 if (window.initialDrawTriggered) generateLogos();
         }
     };
@@ -440,13 +464,21 @@
     const mainContainer = document.getElementById('mainContainer');
     window.initialDrawTriggered = false; // Flag to see if a draw was attempted before symbol loaded
 
-    // --- Using V2 Script Section ---
+    // --- Options Elements ---
     const optionsToggleBtn = document.getElementById('optionsToggleBtn');
     const signatureInputWrapper = document.getElementById('signatureInputWrapper');
     const signatureInput = document.getElementById('signatureInput');
+    const bgImageUrlWrapper = document.getElementById('bgImageUrlWrapper'); // New
+    const bgImageUrlInput = document.getElementById('bgImageUrlInput');   // New
     const colorOptionsContainer = document.getElementById('colorOptionsContainer');
-    let isOptionsVisible = false; // Starts false, controls both signature and color visibility
-    // --- END V2 Script Section ---
+    let isOptionsVisible = false; // Controls visibility of ALL options
+    // --- END Options Elements ---
+
+    // --- Background Image State ---
+    let backgroundImageObject = null; // Will hold the loaded Image object
+    let currentBackgroundImageUrl = ''; // Stores the URL currently being used/loaded OR a data URL from paste
+    let isPastedImage = false; // Flag to indicate if the current background is from paste
+    // --- END Background Image State ---
 
     const colorPicker1 = document.getElementById('colorPicker1');
     const colorPicker2 = document.getElementById('colorPicker2');
@@ -504,8 +536,6 @@
     }
 
     function updatePickerBackgrounds() {
-        // Only update if the pickers element exists (which it does)
-        // No need to check visibility, just update the underlying style variable
         if (colorOptionsContainer) {
             document.getElementById('labelPicker1').style.setProperty('--bg-color', colorPicker1.value);
             document.getElementById('labelPicker2').style.setProperty('--bg-color', colorPicker2.value);
@@ -518,22 +548,124 @@
         generateLogos();
     }
 
-    // --- Using V2 Toggle Function ---
+    function loadImageAndUpdate(imageUrl) {
+         isPastedImage = imageUrl.startsWith('data:image/'); // Check if it's a data URL (pasted)
+
+         if (imageUrl === currentBackgroundImageUrl) {
+             return; // No change, do nothing
+         }
+
+         currentBackgroundImageUrl = imageUrl; // Update the current URL/data state
+
+         if (currentBackgroundImageUrl) {
+             // If there's a new URL or data URL, create a new image object and start loading
+             console.log("Attempting to load background image:", isPastedImage ? "[Pasted Image]" : currentBackgroundImageUrl);
+             backgroundImageObject = new Image();
+
+             // Add crossorigin attribute for potential CORS issues with external URLs
+             // Not strictly necessary for data URLs, but doesn't hurt
+             if (!isPastedImage) {
+                 backgroundImageObject.crossOrigin = "Anonymous";
+             }
+
+             backgroundImageObject.onload = () => {
+                 console.log("Background image loaded successfully:", isPastedImage ? "[Pasted Image]" : currentBackgroundImageUrl);
+                 if (!isPastedImage) {
+                     bgImageUrlInput.value = currentBackgroundImageUrl; // Keep URL in input if it wasn't pasted
+                 }
+                 generateLogos(); // Redraw all logos now that the image is ready
+             };
+             backgroundImageObject.onerror = (err) => {
+                 console.error("Failed to load background image:", isPastedImage ? "[Pasted Image]" : currentBackgroundImageUrl, err);
+                 backgroundImageObject = null; // Reset on error
+                 currentBackgroundImageUrl = ''; // Clear the failed URL state
+                 bgImageUrlInput.value = ''; // Clear the input field
+                 isPastedImage = false;
+                 generateLogos(); // Redraw with color backgrounds
+             };
+             backgroundImageObject.src = currentBackgroundImageUrl;
+         } else {
+             // If the URL/data was cleared, reset the image object
+             backgroundImageObject = null;
+             isPastedImage = false;
+             // Trigger redraw to revert to color backgrounds
+             generateLogos();
+         }
+    }
+
+    // Handle URL input from typing/pasting URL text
+    function handleBgImageInput() {
+        const newUrl = bgImageUrlInput.value.trim();
+        // Only process if it looks like a URL and not a data URL (which is handled by paste event)
+        if (!newUrl.startsWith('data:image/')) {
+             loadImageAndUpdate(newUrl);
+        } else if (!newUrl) {
+             // Handle clearing the input field
+             loadImageAndUpdate('');
+        }
+    }
+
+    // --- NEW: Handle direct image paste ---
+    function handleImagePaste(event) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        if (!clipboardData) {
+             console.log("Clipboard data not accessible.");
+             return; // Cannot access clipboard data
+        }
+
+        const items = clipboardData.items;
+        let imageFound = false;
+
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
+                event.preventDefault(); // Prevent default paste (text insertion)
+                imageFound = true;
+                const imageFile = items[i].getAsFile();
+
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        console.log("Image pasted successfully.");
+                        // Clear the input field text visually
+                        bgImageUrlInput.value = '[Pasted Image]'; // Indicate paste success
+                        // Load the image using the data URL
+                        loadImageAndUpdate(e.target.result);
+                    }
+                    reader.onerror = function(e) {
+                        console.error("Error reading pasted image file:", e);
+                         bgImageUrlInput.value = ''; // Clear input on error
+                         loadImageAndUpdate(''); // Reset background
+                    }
+                    reader.readAsDataURL(imageFile);
+                }
+                break; // Stop after finding the first image
+            }
+        }
+        // If no image was found in paste items, let the default paste (likely text) happen
+        // The handleBgImageInput via 'oninput' will catch it if it's a URL.
+         if (!imageFound) {
+            console.log("No image found in paste items.");
+            // Allow default text paste if needed, or do nothing.
+            // `handleBgImageInput` will be triggered via `oninput` if text was pasted.
+         }
+    }
+    // --- END NEW Function ---
+
     function toggleOptionsVisibility() {
         isOptionsVisible = !isOptionsVisible; // Toggle the state
 
-        // Toggle visibility for BOTH containers
+        // Toggle visibility for ALL optional containers
         signatureInputWrapper.classList.toggle('visible', isOptionsVisible);
+        bgImageUrlWrapper.classList.toggle('visible', isOptionsVisible); // New
         colorOptionsContainer.classList.toggle('visible', isOptionsVisible);
 
         // Change the button emoji based on state
         optionsToggleBtn.textContent = isOptionsVisible ? '🔼' : '🔽';
 
-        // Regenerate logos because signature *might* be added/removed visually
-        // and its presence affects logo generation (filename and drawing)
+        // Regenerate logos because options affecting drawing (signature, bg image) might change
+        // or become relevant/irrelevant based on visibility
         generateLogos();
     }
-    // --- END V2 Toggle Function ---
 
     function swapColors12() {
         const tempColor = colorPicker1.value;
@@ -551,37 +683,94 @@
         generateLogos();
     }
 
+    // --- NEW: Function to draw background image with 'cover' behavior ---
+    function drawBackgroundImage(ctx, img) {
+        const canvas = ctx.canvas;
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+
+        if (!imgWidth || !imgHeight) return; // Prevent drawing if image has no dimensions
+
+        const canvasRatio = canvasWidth / canvasHeight;
+        const imgRatio = imgWidth / imgHeight;
+
+        let drawWidth, drawHeight, drawX, drawY;
+
+        // Determine scaling and positioning based on aspect ratios
+        if (imgRatio > canvasRatio) {
+            // Image is wider than canvas aspect ratio -> fit height, crop width
+            drawHeight = canvasHeight;
+            drawWidth = imgRatio * drawHeight;
+            drawX = (canvasWidth - drawWidth) / 2; // Center horizontally
+            drawY = 0;
+        } else {
+            // Image is taller than canvas aspect ratio (or same) -> fit width, crop height
+            drawWidth = canvasWidth;
+            drawHeight = drawWidth / imgRatio;
+            drawX = 0;
+            drawY = (canvasHeight - drawHeight) / 2; // Center vertically
+        }
+
+        try {
+            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        } catch (e) {
+            console.error("Error drawing background image:", e);
+            // Potentially fall back to color here if needed, but generateLogos handles the main fallback
+        }
+    }
+    // --- END NEW Function ---
+
+
     function generateLogos() {
-            // Check if symbol is ready, if not, queue the draw and exit
-            if (!symbolLoaded && (!symbolImg.complete || symbolImg.naturalWidth === 0)) {
+        if (!symbolLoaded && (!symbolImg.complete || symbolImg.naturalWidth === 0)) {
             console.log("Symbol not loaded yet, queuing draw.");
-            window.initialDrawTriggered = true; // Mark that a draw was attempted
+            window.initialDrawTriggered = true;
             return;
         }
 
         requestAnimationFrame(() => {
             const input = document.getElementById('wordInput').value;
-            const word = input ? input + "  " : ""; // Add space for symbol if word exists
+            const word = input ? input + "  " : "";
             const selectedColors = getSelectedColors();
-            // Use isOptionsVisible (V2 logic) to determine if signature should be considered
+            // Get signature *only if options are visible*
             const signatureText = isOptionsVisible ? signatureInput.value.trim() : '';
+            // Determine if a valid, loaded background image should be used (checks if options visible AND image exists and loaded)
+            const useImageBackground = isOptionsVisible && backgroundImageObject && backgroundImageObject.complete && backgroundImageObject.naturalWidth > 0;
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const textColor = selectedColors[canvasInfo.textColorRole];
-                const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                const isSolidBackground = bgColor !== 'transparent';
+                // Determine initial background color (might be overridden by image)
+                const designatedBgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
+                const isDesignatedSolid = designatedBgColor !== 'transparent';
 
+                // 1. Clear Canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (isSolidBackground) {
-                    ctx.fillStyle = bgColor;
+                // 2. Draw Background (Image OR Color OR Transparent)
+                if (useImageBackground) {
+                    // If a valid image is ready, draw it as background
+                    drawBackgroundImage(ctx, backgroundImageObject);
+                    // Remove the CSS checkerboard class if it exists, as we have a background now
+                    canvas.classList.remove('transparent-bg');
+                } else if (isDesignatedSolid) {
+                    // If no image, but it's designated as a solid color canvas
+                    ctx.fillStyle = designatedBgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    // Remove the CSS checkerboard class if it exists
+                    canvas.classList.remove('transparent-bg');
+                } else {
+                    // If no image AND it's designated as transparent, do nothing to canvas context
+                    // but ensure the CSS checkerboard class is present for the element style
+                    canvas.classList.add('transparent-bg');
                 }
 
-                // Draw main text and symbol
+
+                // 3. Draw main text and symbol (if word exists)
                 if (word) {
                     const maxWidth = canvas.width * 0.9;
                     const maxHeight = canvas.height * 0.8;
@@ -590,43 +779,34 @@
                     let iterations = 0;
                     const maxIterations = 50;
 
-                    // Function to set font and measure text
                     const setFontAndMeasure = (size) => {
                         ctx.font = `bold ${size}px Lexend`;
-                        ctx.letterSpacing = `${size * -0.1}px`; // Apply negative letter spacing
+                        ctx.letterSpacing = `${size * -0.1}px`;
                         metrics = ctx.measureText(word);
-                        // Use actual bounding box if available, fallback to approximations
                         textHeight = (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2);
                         textWidth = metrics.width;
                     };
 
-                    // Initial measurement
                     setFontAndMeasure(fontSize);
 
-                    // Scale down if too big
                     while ((textWidth > maxWidth || textHeight > maxHeight) && fontSize > 10 && iterations < maxIterations) {
-                        // Aggressive scaling down based on the dimension that exceeds the limit most
-                        fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98; // 0.98 factor for safety margin
-                        fontSize = Math.max(fontSize, 10); // Don't go below 10px
+                        fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.98;
+                        fontSize = Math.max(fontSize, 10);
                         setFontAndMeasure(fontSize);
                         iterations++;
                     }
-                        // Optional: Scale up slightly if it's much smaller than bounds (less aggressive)
-                        iterations = 0; // Reset iteration count for scale-up loop
-                        while (textWidth < maxWidth * 0.7 && textHeight < maxHeight * 0.7 && fontSize < Math.min(canvas.width, canvas.height) * 0.8 && iterations < maxIterations) {
+                    iterations = 0;
+                    while (textWidth < maxWidth * 0.7 && textHeight < maxHeight * 0.7 && fontSize < Math.min(canvas.width, canvas.height) * 0.8 && iterations < maxIterations) {
                         let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                            // Only scale up significantly if there's room, avoid tiny increments
-                            if (scaleFactor < 1.05) break; // Stop if scale factor is small
-                        fontSize *= Math.min(scaleFactor, 1.02); // Gentle scale up
+                         if (scaleFactor < 1.05) break;
+                        fontSize *= Math.min(scaleFactor, 1.02);
                         setFontAndMeasure(fontSize);
                         iterations++;
                     }
-                        // Final check: If scale-up went too far, scale back down once
-                        if (textWidth > maxWidth || textHeight > maxHeight) {
-                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                            setFontAndMeasure(fontSize);
-                        }
-
+                     if (textWidth > maxWidth || textHeight > maxHeight) {
+                        fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                        setFontAndMeasure(fontSize);
+                    }
 
                     // Draw Text
                     ctx.fillStyle = textColor;
@@ -634,54 +814,47 @@
                     ctx.textBaseline = 'middle';
                     const textY = canvas.height / 2;
 
-                        // Re-apply final font settings before drawing text and measuring for symbol
-                        ctx.font = `bold ${fontSize}px Lexend`;
-                        ctx.letterSpacing = `${fontSize * -0.1}px`;
+                    ctx.font = `bold ${fontSize}px Lexend`;
+                    ctx.letterSpacing = `${fontSize * -0.1}px`;
+                    const inputMetrics = ctx.measureText(input); // Measure without trailing spaces
+                    const inputActualWidth = inputMetrics.width;
+                    ctx.fillText(word, canvas.width / 2, textY); // Draw with spaces
 
-                        // Measure the input *without* the trailing spaces for accurate symbol positioning
-                        const inputMetrics = ctx.measureText(input);
-                        const inputActualWidth = inputMetrics.width;
+                    // Calculate Symbol Position and Size
+                    const symbolHeight = fontSize * 0.6;
+                    const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889);
+                    const symbolWidth = symbolHeight * symbolAspectRatio;
+                    const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
+                    const downwardShiftFactor = isIOS ? IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR : BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR;
+                    const symbolBottomY = textY + (fontSize * downwardShiftFactor);
+                    const symbolY = symbolBottomY - symbolHeight;
 
-                    // Draw the text (including the trailing spaces)
-                    ctx.fillText(word, canvas.width / 2, textY);
-
-                        // Calculate Symbol Position and Size (relative to text)
-                        const symbolHeight = fontSize * 0.6; // Symbol height relative to font size
-                        const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889); // Use loaded ratio or fallback
-                        const symbolWidth = symbolHeight * symbolAspectRatio;
-                        // Position symbol slightly after the measured text width, accounting for letter spacing
-                        const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1); // Adjust slightly left due to center align + spacing?
-                        // Adjust vertical position based on OS (iOS needs more shift)
-                        const downwardShiftFactor = isIOS ? IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR : BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR;
-                        const symbolBottomY = textY + (fontSize * downwardShiftFactor); // Align bottom of symbol relative to text middle + shift
-                        const symbolY = symbolBottomY - symbolHeight; // Calculate top Y
-
-                        // Draw Symbol if loaded
-                        if (symbolLoaded) {
-                            drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
-                        }
+                    // Draw Symbol if loaded
+                    if (symbolLoaded) {
+                        drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
+                    }
                 }
 
-                // Draw Signature if text exists (which requires options to be visible)
-                if (signatureText) {
+                // 4. Draw Signature if text exists (requires options to be visible)
+                if (signatureText) { // signatureText is already '' if options are hidden
                     ctx.fillStyle = textColor;
-                    ctx.font = '400 40px Inter'; // Signature font
+                    ctx.font = '400 40px Inter';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'bottom';
-                    ctx.letterSpacing = '0px'; // Reset letter spacing for signature
-                    const padding = 30; // Padding from bottom-right corner
+                    ctx.letterSpacing = '0px';
+                    const padding = 30;
                     const sigX = canvas.width - padding;
                     const sigY = canvas.height - padding;
                     ctx.fillText(signatureText, sigX, sigY);
                 }
-                // Reset letter spacing for subsequent draws (just in case)
+                // Reset letter spacing
                 ctx.letterSpacing = '0px';
             });
         });
     }
 
     function setupCanvasClickEvents() {
-        // (Function remains unchanged, already uses isOptionsVisible correctly)
+        // (No changes needed here, filename generation logic remains the same)
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
             if (!canvas) return;
@@ -696,13 +869,24 @@
                         const aspectRatio = canvas.width === canvas.height ? 'SQ' : '16x9';
                         const selectedColors = getSelectedColors();
                         const textColor = selectedColors[canvasInfo.textColorRole];
-                        const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                        // Use isOptionsVisible to determine if signature part is needed in filename
+                         // Determine background description for filename (color or 'img' or 'transp')
+                        let bgDesc;
+                        // Check if image should be used based on options visibility AND loaded image state
+                        const useImageBackground = isOptionsVisible && backgroundImageObject && backgroundImageObject.complete && backgroundImageObject.naturalWidth > 0;
+                        if(useImageBackground) {
+                            bgDesc = 'img'; // Use 'img' for both URL and pasted images
+                        } else {
+                             const designatedBgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
+                             bgDesc = designatedBgColor === 'transparent' ? 'transp' : designatedBgColor.replace('#', '');
+                        }
+
                         const sigText = isOptionsVisible ? signatureInput.value.trim() : '';
                         const sigPart = sigText ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
                         const cleanTextColor = textColor.replace('#', '');
-                        const cleanBgColor = bgColor === 'transparent' ? 'transp' : bgColor.replace('#', '');
-                        const filename = `${word}_${cleanTextColor}-on-${cleanBgColor}_${aspectRatio}${sigPart}.png`;
+
+                        // Use bgDesc in filename
+                        const filename = `${word}_${cleanTextColor}-on-${bgDesc}_${aspectRatio}${sigPart}.png`;
+
 
                         // iOS Share API / Fallback Logic
                         if (isIOS && navigator.share) {
@@ -711,46 +895,39 @@
                                 .then(blob => {
                                     if (!blob) throw new Error("Blob creation failed");
                                     const file = new File([blob], filename, { type: 'image/png' });
-                                    // Check if sharing files is likely supported
                                     if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
                                             console.warn("Sharing PNG files might not be supported by the browser/OS, falling back to opening image.");
-                                            window.open(dataUrl, '_blank'); // Fallback for browsers that claim share but can't share files
+                                            window.open(dataUrl, '_blank');
                                             return;
                                     }
-                                    // Attempt to share
                                     navigator.share({ files: [file], title: filename })
                                     .catch(error => {
-                                        // Handle specific errors or fallback
-                                        if (error.name !== 'AbortError') { // Ignore user cancellation
+                                        if (error.name !== 'AbortError') {
                                             console.error('Share API failed:', error);
-                                            window.open(dataUrl, '_blank'); // Fallback on share error
+                                            window.open(dataUrl, '_blank');
                                         } else { console.log('Share action cancelled by user.'); }
                                     });
                                 })
                                 .catch(error => {
                                     console.error('Fetch/Blob/Share Setup failed:', error);
-                                    window.open(dataUrl, '_blank'); // Fallback if blob creation fails
+                                    window.open(dataUrl, '_blank');
                                 });
                         } else if (isIOS) {
-                            // Fallback for older iOS or browsers without Share API
                             window.open(dataUrl, '_blank');
                         } else {
-                            // Standard download link for non-iOS / desktop
                             const link = document.createElement('a');
                             link.download = filename;
                             link.href = dataUrl;
-                            document.body.appendChild(link); // Required for Firefox
+                            document.body.appendChild(link);
                             link.click();
-                            document.body.removeChild(link); // Clean up
+                            document.body.removeChild(link);
                         }
                     } catch (e) {
                         console.error("Error generating or downloading canvas image:", e);
-                        // Provide user feedback
                         alert("Could not generate download link. Your browser might not support this feature or the canvas is empty.");
                     }
                 };
             } else {
-                // No click download on desktop, remove pointer cursor
                 canvas.style.cursor = '';
             }
         });
@@ -769,70 +946,61 @@
 
             let canvasContainerWidth;
                 if (smallScreen) {
-                    // On mobile (grid layout), each canvas takes full container width
                     canvasContainerWidth = container.clientWidth;
                 } else {
-                    // On desktop (flex layout), two canvases per row with a gap
                     canvasContainerWidth = (totalWidth - gap) / 2;
                 }
 
-            // Calculate display dimensions based on container width and native aspect ratio
-            const displayWidth = Math.max(10, Math.floor(canvasContainerWidth)); // Ensure minimum width
-            const nativeRatio = canvas.height / canvas.width; // Use native dimensions for ratio
+            const displayWidth = Math.max(10, Math.floor(canvasContainerWidth));
+            const nativeRatio = canvas.height / canvas.width;
             const displayHeight = Math.floor(displayWidth * nativeRatio);
 
-            // Set the CSS style dimensions for display
             canvas.style.width = `${displayWidth}px`;
             canvas.style.height = `${displayHeight}px`;
         });
 
-        // Regenerate logos with potentially new sizes/layouts
         generateLogos();
-        // Re-setup click events based on new screen size (mobile vs desktop)
         setupCanvasClickEvents();
     }
 
     window.addEventListener('load', () => {
             checkIOSVersionAndWarn();
 
-            // Check if symbol image is already loaded by the time 'load' fires
             if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                 symbolLoaded = true;
             }
-            // Initial UI setup
-            updatePickerBackgrounds(); // Set initial color picker backgrounds (even though hidden)
-            resizeHandler(); // Initial resize, layout, and logo generation (respects hidden options)
+            updatePickerBackgrounds();
+            resizeHandler(); // Initial resize, layout, and logo generation
 
-            // Attach listener to the main options toggle button (V2 logic)
+            // Attach listeners
             optionsToggleBtn.addEventListener('click', toggleOptionsVisibility);
-
-            // Attach listeners for color swap buttons
             const swapBtn12 = document.getElementById('swapColor12Btn');
             const swapBtn23 = document.getElementById('swapColor23Btn');
             if (swapBtn12) swapBtn12.addEventListener('click', swapColors12);
             if (swapBtn23) swapBtn23.addEventListener('click', swapColors23);
 
-            // Debounced resize handler
+            // *** NEW: Add paste listener for background image input ***
+            if (bgImageUrlInput) {
+                bgImageUrlInput.addEventListener('paste', handleImagePaste);
+            }
+            // *** END NEW ***
+
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
                     resizeHandler();
-                }, 150); // Wait 150ms after resize stops
+                }, 150);
             });
 
-            // Fallback timer in case onload/onerror doesn't fire reliably for the image
             setTimeout(() => {
                 if (!symbolLoaded) {
                     console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw if queued.");
-                    symbolLoaded = true; // Assume it's as loaded as it will get
-                    // If a draw was queued earlier, try it now
+                    symbolLoaded = true;
                     if(window.initialDrawTriggered) generateLogos();
                 }
-            }, 3000); // 3 second timeout
+            }, 3000);
 
-            // If symbol was already loaded AND a draw was queued before 'load' event, draw now
-            // This covers cases where image loads very fast
             if (window.initialDrawTriggered && symbolLoaded) {
                 console.log("Symbol was ready, drawing queued request.");
                 generateLogos();
