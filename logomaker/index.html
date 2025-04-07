@@ -64,8 +64,9 @@
         /* Shared style for text-based input wrappers */
         .text-input-wrapper,
         .signature-input-wrapper,
-        .image-url-input-wrapper, /* Added */
-        .color-picker-label {
+        .image-url-input-wrapper,
+        .color-picker-label,
+        .image-filter-wrapper { /* Added */
             box-sizing: border-box;
             border: var(--input-border-width) solid transparent;
             border-radius: var(--border-radius);
@@ -82,8 +83,13 @@
 
         .text-input-wrapper { --bg-color: #FFFFFF; }
         .signature-input-wrapper,
-        .image-url-input-wrapper { --bg-color: #f8f8f8; } /* Added */
+        .image-url-input-wrapper,
+        .image-filter-wrapper { --bg-color: #f8f8f8; } /* Added */
         .color-picker-label { padding: 0; }
+        .image-filter-wrapper { /* Specific styles for filter row */
+            justify-content: space-around; /* Distribute space */
+            padding: 0 calc(var(--input-padding) * 2); /* More internal padding */
+        }
 
         @keyframes gradientShift {
             0% { background-position: 0% 0%, 0% 0%; }
@@ -92,14 +98,15 @@
 
         .text-input-wrapper,
         .signature-input-wrapper,
-        .image-url-input-wrapper { /* Added */
+        .image-url-input-wrapper,
+        .image-filter-wrapper { /* Added */
             width: 100%;
             max-width: 300px;
         }
 
         .text-input-wrapper input[type="text"]#wordInput,
         .signature-input-wrapper input[type="text"]#signatureInput,
-        .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
+        .image-url-input-wrapper input[type="text"]#bgImageUrlInput {
             flex-grow: 1;
             height: 100%;
             background: transparent;
@@ -116,14 +123,14 @@
         }
 
         .signature-input-wrapper input[type="text"]#signatureInput,
-        .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
+        .image-url-input-wrapper input[type="text"]#bgImageUrlInput {
             font-size: 14px;
             font-family: 'Inter', sans-serif;
             color: #555;
         }
 
         .signature-input-wrapper input[type="text"]::placeholder,
-        .image-url-input-wrapper input[type="text"]::placeholder { /* Added */
+        .image-url-input-wrapper input[type="text"]::placeholder {
             color: #aaa;
         }
 
@@ -155,9 +162,10 @@
            opacity: 0.7;
         }
 
-        /* Hide signature, image URL, and color options by default */
+        /* Hide signature, image URL, color options AND filters by default */
         .signature-input-wrapper,
-        .image-url-input-wrapper, /* Added */
+        .image-url-input-wrapper,
+        .image-filter-wrapper, /* Added */
         #colorOptionsContainer {
             width: 100%;
             max-width: 300px;
@@ -166,9 +174,31 @@
 
         /* Show when .visible class is added */
         .signature-input-wrapper.visible,
-        .image-url-input-wrapper.visible, /* Added */
+        .image-url-input-wrapper.visible,
+        .image-filter-wrapper.visible, /* Added */
         #colorOptionsContainer.visible {
             display: flex;
+        }
+
+        /* Styles for the filter labels and checkboxes */
+        .image-filter-wrapper label {
+            display: inline-flex; /* Align text and checkbox */
+            align-items: center;
+            gap: 5px; /* Space between text and checkbox */
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+            user-select: none; /* Prevent text selection on click */
+        }
+
+        .image-filter-wrapper input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+             /* Optional: Style checkbox appearance */
+            width: 16px;
+            height: 16px;
+            accent-color: #FA660F; /* Match theme color */
         }
         /* --- END Hidden Options Section --- */
 
@@ -284,7 +314,8 @@
 
             .text-input-wrapper,
             .signature-input-wrapper, /* Still apply max-width when visible */
-            .image-url-input-wrapper, /* Added */
+            .image-url-input-wrapper,
+            .image-filter-wrapper, /* Added */
             #colorOptionsContainer { /* Still apply max-width when visible */
                 max-width: 100%;
             }
@@ -305,9 +336,17 @@
              }
 
             .signature-input-wrapper input[type="text"]#signatureInput,
-            .image-url-input-wrapper input[type="text"]#bgImageUrlInput { /* Added */
+            .image-url-input-wrapper input[type="text"]#bgImageUrlInput {
                 font-size: 16px;
             }
+            .image-filter-wrapper label {
+                font-size: 16px; /* Match other inputs */
+            }
+             .image-filter-wrapper input[type="checkbox"] {
+                 width: 18px; /* Slightly larger on mobile */
+                 height: 18px;
+             }
+
 
             .container {
                 display: grid;
@@ -320,22 +359,23 @@
             .text-input-wrapper { order: 2; }
             /* Hidden elements still need order to maintain flow when shown */
             .signature-input-wrapper { order: 3; }
-            .image-url-input-wrapper { order: 4; } /* Added */
-            #colorOptionsContainer { order: 5; } /* Adjusted order */
+            .image-url-input-wrapper { order: 4; }
+            .image-filter-wrapper { order: 5; } /* NEW: Added filter row order */
+            #colorOptionsContainer { order: 6; } /* Adjusted order */
 
             /* *** MODIFIED CANVAS ORDER for Mobile: Solid Backgrounds First *** */
-            #canvas1 { order: 6; }  /* Solid Color / Image */
-            #canvas2 { order: 7; }  /* Solid Color / Image */
-            #canvas3 { order: 8; }  /* Solid Color / Image */
-            #canvas7 { order: 9; }  /* Solid Color / Image */
-            #canvas8 { order: 10; } /* Solid Color / Image */
-            #canvas9 { order: 11; } /* Solid Color / Image */
-            #canvas4 { order: 12; } /* Transparent / Image */
-            #canvas5 { order: 13; } /* Transparent / Image */
-            #canvas6 { order: 14; } /* Transparent / Image */
-            #canvas10 { order: 15; }/* Transparent / Image */
-            #canvas11 { order: 16; }/* Transparent / Image */
-            #canvas12 { order: 17; }/* Transparent / Image */
+            #canvas1 { order: 7; }  /* Solid Color / Image */
+            #canvas2 { order: 8; }  /* Solid Color / Image */
+            #canvas3 { order: 9; }  /* Solid Color / Image */
+            #canvas7 { order: 10; }  /* Solid Color / Image */
+            #canvas8 { order: 11; } /* Solid Color / Image */
+            #canvas9 { order: 12; } /* Solid Color / Image */
+            #canvas4 { order: 13; } /* Transparent / Image */
+            #canvas5 { order: 14; } /* Transparent / Image */
+            #canvas6 { order: 15; } /* Transparent / Image */
+            #canvas10 { order: 16; }/* Transparent / Image */
+            #canvas11 { order: 17; }/* Transparent / Image */
+            #canvas12 { order: 18; }/* Transparent / Image */
             /* *** END MODIFIED CANVAS ORDER *** */
 
             footer { order: 99; }
@@ -368,10 +408,21 @@
             <input type="text" id="signatureInput" placeholder="Add signature..." oninput="generateLogos()">
         </div>
 
-        <!-- NEW: Starts hidden -->
+        <!-- Starts hidden -->
         <div class="image-url-input-wrapper" id="bgImageUrlWrapper">
-             <!-- Changed placeholder text below -->
              <input type="text" id="bgImageUrlInput" placeholder="Background: Paste image or image URL" oninput="handleBgImageInput()">
+        </div>
+
+        <!-- NEW: Image Filter Options (Starts hidden) -->
+        <div class="image-filter-wrapper" id="imageFilterWrapper">
+            <label for="grayscaleCheckbox">
+                <span>Grayscale</span>
+                <input type="checkbox" id="grayscaleCheckbox" name="imageFilter">
+            </label>
+            <label for="duotoneCheckbox">
+                <span>Duotone</span>
+                <input type="checkbox" id="duotoneCheckbox" name="imageFilter">
+            </label>
         </div>
 
         <!-- Starts hidden -->
@@ -454,8 +505,13 @@
     };
     symbolImg.onerror = () => console.error("Failed to load symbol.png");
 
-    const offscreenCanvas = document.createElement('canvas');
+    // --- Offscreen Canvases for Filtering ---
+    const offscreenCanvas = document.createElement('canvas'); // For symbol colorizing
     const offscreenCtx = offscreenCanvas.getContext('2d');
+    const filterCanvas = document.createElement('canvas'); // For image filtering (source)
+    const filterCtx = filterCanvas.getContext('2d', { willReadFrequently: true }); // Source for ImageData
+    // ---
+
     const isMobile = () => window.innerWidth <= 600;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08;
@@ -468,9 +524,12 @@
     const optionsToggleBtn = document.getElementById('optionsToggleBtn');
     const signatureInputWrapper = document.getElementById('signatureInputWrapper');
     const signatureInput = document.getElementById('signatureInput');
-    const bgImageUrlWrapper = document.getElementById('bgImageUrlWrapper'); // New
-    const bgImageUrlInput = document.getElementById('bgImageUrlInput');   // New
+    const bgImageUrlWrapper = document.getElementById('bgImageUrlWrapper');
+    const bgImageUrlInput = document.getElementById('bgImageUrlInput');
     const colorOptionsContainer = document.getElementById('colorOptionsContainer');
+    const imageFilterWrapper = document.getElementById('imageFilterWrapper'); // NEW
+    const grayscaleCheckbox = document.getElementById('grayscaleCheckbox'); // NEW
+    const duotoneCheckbox = document.getElementById('duotoneCheckbox');   // NEW
     let isOptionsVisible = false; // Controls visibility of ALL options
     // --- END Options Elements ---
 
@@ -480,10 +539,16 @@
     let isPastedImage = false; // Flag to indicate if the current background is from paste
     // --- END Background Image State ---
 
+    // --- Filter State ---
+    let isGrayscaleEnabled = false; // NEW
+    let isDuotoneEnabled = false;   // NEW
+    // --- END Filter State ---
+
     const colorPicker1 = document.getElementById('colorPicker1');
     const colorPicker2 = document.getElementById('colorPicker2');
     const colorPicker3 = document.getElementById('colorPicker3');
 
+    // --- Helper Functions ---
     function checkIOSVersionAndWarn() {
         // (Function remains unchanged)
         const userAgent = navigator.userAgent;
@@ -512,6 +577,21 @@
             [COLOR_ROLE_3]: colorPicker3.value
         };
     }
+
+    function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
+    function lerp(a, b, amount) {
+        const t = Math.max(0, Math.min(1, amount));
+        return a + (b - a) * t;
+    }
+    // --- End Helper Functions ---
 
     function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
         // (Function remains unchanged)
@@ -548,6 +628,23 @@
         generateLogos();
     }
 
+    function handleFilterChange(changedCheckbox) {
+        if (changedCheckbox === grayscaleCheckbox && grayscaleCheckbox.checked) {
+            duotoneCheckbox.checked = false; // Uncheck the other
+            isGrayscaleEnabled = true;
+            isDuotoneEnabled = false;
+        } else if (changedCheckbox === duotoneCheckbox && duotoneCheckbox.checked) {
+            grayscaleCheckbox.checked = false; // Uncheck the other
+            isGrayscaleEnabled = false;
+            isDuotoneEnabled = true;
+        } else {
+            // If the currently checked box was unchecked
+            isGrayscaleEnabled = grayscaleCheckbox.checked;
+            isDuotoneEnabled = duotoneCheckbox.checked;
+        }
+        generateLogos(); // Redraw with new filter state
+    }
+
     function loadImageAndUpdate(imageUrl) {
          isPastedImage = imageUrl.startsWith('data:image/'); // Check if it's a data URL (pasted)
 
@@ -557,13 +654,18 @@
 
          currentBackgroundImageUrl = imageUrl; // Update the current URL/data state
 
+         // Hide filter options initially until image loads
+         imageFilterWrapper.classList.remove('visible');
+         grayscaleCheckbox.checked = false;
+         duotoneCheckbox.checked = false;
+         isGrayscaleEnabled = false;
+         isDuotoneEnabled = false;
+
          if (currentBackgroundImageUrl) {
              // If there's a new URL or data URL, create a new image object and start loading
              console.log("Attempting to load background image:", isPastedImage ? "[Pasted Image]" : currentBackgroundImageUrl);
              backgroundImageObject = new Image();
 
-             // Add crossorigin attribute for potential CORS issues with external URLs
-             // Not strictly necessary for data URLs, but doesn't hurt
              if (!isPastedImage) {
                  backgroundImageObject.crossOrigin = "Anonymous";
              }
@@ -571,7 +673,11 @@
              backgroundImageObject.onload = () => {
                  console.log("Background image loaded successfully:", isPastedImage ? "[Pasted Image]" : currentBackgroundImageUrl);
                  if (!isPastedImage) {
-                     bgImageUrlInput.value = currentBackgroundImageUrl; // Keep URL in input if it wasn't pasted
+                     bgImageUrlInput.value = currentBackgroundImageUrl;
+                 }
+                 // Show filter options ONLY if the main options toggle is also visible
+                 if (isOptionsVisible) {
+                    imageFilterWrapper.classList.add('visible');
                  }
                  generateLogos(); // Redraw all logos now that the image is ready
              };
@@ -581,6 +687,11 @@
                  currentBackgroundImageUrl = ''; // Clear the failed URL state
                  bgImageUrlInput.value = ''; // Clear the input field
                  isPastedImage = false;
+                 imageFilterWrapper.classList.remove('visible'); // Hide filters on error
+                 grayscaleCheckbox.checked = false;
+                 duotoneCheckbox.checked = false;
+                 isGrayscaleEnabled = false;
+                 isDuotoneEnabled = false;
                  generateLogos(); // Redraw with color backgrounds
              };
              backgroundImageObject.src = currentBackgroundImageUrl;
@@ -588,29 +699,30 @@
              // If the URL/data was cleared, reset the image object
              backgroundImageObject = null;
              isPastedImage = false;
+             imageFilterWrapper.classList.remove('visible'); // Hide filters if input cleared
+             grayscaleCheckbox.checked = false;
+             duotoneCheckbox.checked = false;
+             isGrayscaleEnabled = false;
+             isDuotoneEnabled = false;
              // Trigger redraw to revert to color backgrounds
              generateLogos();
          }
     }
 
-    // Handle URL input from typing/pasting URL text
     function handleBgImageInput() {
         const newUrl = bgImageUrlInput.value.trim();
-        // Only process if it looks like a URL and not a data URL (which is handled by paste event)
         if (!newUrl.startsWith('data:image/')) {
              loadImageAndUpdate(newUrl);
         } else if (!newUrl) {
-             // Handle clearing the input field
              loadImageAndUpdate('');
         }
     }
 
-    // --- NEW: Handle direct image paste ---
     function handleImagePaste(event) {
         const clipboardData = event.clipboardData || window.clipboardData;
         if (!clipboardData) {
              console.log("Clipboard data not accessible.");
-             return; // Cannot access clipboard data
+             return;
         }
 
         const items = clipboardData.items;
@@ -618,7 +730,7 @@
 
         for (let i = 0; i < items.length; i++) {
             if (items[i].kind === 'file' && items[i].type.startsWith('image/')) {
-                event.preventDefault(); // Prevent default paste (text insertion)
+                event.preventDefault();
                 imageFound = true;
                 const imageFile = items[i].getAsFile();
 
@@ -626,44 +738,43 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         console.log("Image pasted successfully.");
-                        // Clear the input field text visually
-                        bgImageUrlInput.value = '[Pasted Image]'; // Indicate paste success
-                        // Load the image using the data URL
+                        bgImageUrlInput.value = '[Pasted Image]';
                         loadImageAndUpdate(e.target.result);
                     }
                     reader.onerror = function(e) {
                         console.error("Error reading pasted image file:", e);
-                         bgImageUrlInput.value = ''; // Clear input on error
-                         loadImageAndUpdate(''); // Reset background
+                         bgImageUrlInput.value = '';
+                         loadImageAndUpdate('');
                     }
                     reader.readAsDataURL(imageFile);
                 }
-                break; // Stop after finding the first image
+                break;
             }
         }
-        // If no image was found in paste items, let the default paste (likely text) happen
-        // The handleBgImageInput via 'oninput' will catch it if it's a URL.
          if (!imageFound) {
             console.log("No image found in paste items.");
-            // Allow default text paste if needed, or do nothing.
-            // `handleBgImageInput` will be triggered via `oninput` if text was pasted.
          }
     }
-    // --- END NEW Function ---
 
     function toggleOptionsVisibility() {
-        isOptionsVisible = !isOptionsVisible; // Toggle the state
+        isOptionsVisible = !isOptionsVisible;
 
-        // Toggle visibility for ALL optional containers
         signatureInputWrapper.classList.toggle('visible', isOptionsVisible);
-        bgImageUrlWrapper.classList.toggle('visible', isOptionsVisible); // New
+        bgImageUrlWrapper.classList.toggle('visible', isOptionsVisible);
         colorOptionsContainer.classList.toggle('visible', isOptionsVisible);
 
-        // Change the button emoji based on state
+        const showFilters = isOptionsVisible && backgroundImageObject && backgroundImageObject.complete && backgroundImageObject.naturalWidth > 0;
+        imageFilterWrapper.classList.toggle('visible', showFilters);
+
         optionsToggleBtn.textContent = isOptionsVisible ? '🔼' : '🔽';
 
-        // Regenerate logos because options affecting drawing (signature, bg image) might change
-        // or become relevant/irrelevant based on visibility
+        if (!isOptionsVisible) {
+            grayscaleCheckbox.checked = false;
+            duotoneCheckbox.checked = false;
+            isGrayscaleEnabled = false;
+            isDuotoneEnabled = false;
+        }
+
         generateLogos();
     }
 
@@ -683,44 +794,126 @@
         generateLogos();
     }
 
-    // --- NEW: Function to draw background image with 'cover' behavior ---
-    function drawBackgroundImage(ctx, img) {
+    function drawBackgroundImageCover(ctx, img) {
         const canvas = ctx.canvas;
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-        const imgWidth = img.naturalWidth;
-        const imgHeight = img.naturalHeight;
+        const imgWidth = img.naturalWidth || img.width;
+        const imgHeight = img.naturalHeight || img.height;
 
-        if (!imgWidth || !imgHeight) return; // Prevent drawing if image has no dimensions
+        if (!imgWidth || !imgHeight) return;
 
         const canvasRatio = canvasWidth / canvasHeight;
         const imgRatio = imgWidth / imgHeight;
-
         let drawWidth, drawHeight, drawX, drawY;
 
-        // Determine scaling and positioning based on aspect ratios
         if (imgRatio > canvasRatio) {
-            // Image is wider than canvas aspect ratio -> fit height, crop width
             drawHeight = canvasHeight;
             drawWidth = imgRatio * drawHeight;
-            drawX = (canvasWidth - drawWidth) / 2; // Center horizontally
+            drawX = (canvasWidth - drawWidth) / 2;
             drawY = 0;
         } else {
-            // Image is taller than canvas aspect ratio (or same) -> fit width, crop height
             drawWidth = canvasWidth;
             drawHeight = drawWidth / imgRatio;
             drawX = 0;
-            drawY = (canvasHeight - drawHeight) / 2; // Center vertically
+            drawY = (canvasHeight - drawHeight) / 2;
         }
 
         try {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
         } catch (e) {
             console.error("Error drawing background image:", e);
-            // Potentially fall back to color here if needed, but generateLogos handles the main fallback
         }
     }
-    // --- END NEW Function ---
+
+    // --- REVISED: Function to apply grayscale filter using ImageData ---
+    function applyGrayscaleFilter(targetCtx, img) {
+        const canvasWidth = targetCtx.canvas.width;
+        const canvasHeight = targetCtx.canvas.height;
+
+        // 1. Draw original image onto filter canvas to get pixel data
+        filterCanvas.width = canvasWidth;
+        filterCanvas.height = canvasHeight;
+        filterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawBackgroundImageCover(filterCtx, img); // Draw source image scaled/cropped
+
+        try {
+            // 2. Get image data
+            const imageData = filterCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imageData.data;
+
+            // 3. Iterate through pixels and apply grayscale logic
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Calculate luminosity (standard formula)
+                const gray = Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b);
+
+                // Set R, G, and B to the calculated gray value
+                data[i] = gray;
+                data[i + 1] = gray;
+                data[i + 2] = gray;
+                // Keep original alpha: data[i + 3] = alpha;
+            }
+
+            // 4. Put the modified image data back onto the *target* canvas
+            targetCtx.putImageData(imageData, 0, 0);
+
+        } catch (e) {
+            console.error("Error processing image data for grayscale:", e);
+            drawBackgroundImageCover(targetCtx, img); // Fallback to original image
+        }
+    }
+    // --- END REVISED Function ---
+
+    // Function to apply duotone filter using ImageData (Remains the same)
+    function applyDuotoneFilter(targetCtx, img, colorDarkHex, colorLightHex) {
+        const canvasWidth = targetCtx.canvas.width;
+        const canvasHeight = targetCtx.canvas.height;
+
+        const colorDark = hexToRgb(colorDarkHex);
+        const colorLight = hexToRgb(colorLightHex);
+
+        if (!colorDark || !colorLight) {
+            console.error("Invalid duotone colors provided:", colorDarkHex, colorLightHex);
+            drawBackgroundImageCover(targetCtx, img);
+            return;
+        }
+
+        filterCanvas.width = canvasWidth;
+        filterCanvas.height = canvasHeight;
+        filterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawBackgroundImageCover(filterCtx, img);
+
+        try {
+            const imageData = filterCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const luminosity = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
+
+                const newR = Math.round(lerp(colorDark.r, colorLight.r, luminosity));
+                const newG = Math.round(lerp(colorDark.g, colorLight.g, luminosity));
+                const newB = Math.round(lerp(colorDark.b, colorLight.b, luminosity));
+
+                data[i] = newR;
+                data[i + 1] = newG;
+                data[i + 2] = newB;
+            }
+            targetCtx.putImageData(imageData, 0, 0);
+
+        } catch (e) {
+            console.error("Error processing image data for duotone:", e);
+            drawBackgroundImageCover(targetCtx, img);
+        }
+    }
 
 
     function generateLogos() {
@@ -734,9 +927,7 @@
             const input = document.getElementById('wordInput').value;
             const word = input ? input + "  " : "";
             const selectedColors = getSelectedColors();
-            // Get signature *only if options are visible*
             const signatureText = isOptionsVisible ? signatureInput.value.trim() : '';
-            // Determine if a valid, loaded background image should be used (checks if options visible AND image exists and loaded)
             const useImageBackground = isOptionsVisible && backgroundImageObject && backgroundImageObject.complete && backgroundImageObject.naturalWidth > 0;
 
             canvases.forEach(canvasInfo => {
@@ -744,33 +935,59 @@
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 const textColor = selectedColors[canvasInfo.textColorRole];
-                // Determine initial background color (might be overridden by image)
                 const designatedBgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
                 const isDesignatedSolid = designatedBgColor !== 'transparent';
 
-                // 1. Clear Canvas
+                const originalCompositeOp = ctx.globalCompositeOperation;
+                // Filter property is no longer used for grayscale/duotone, but reset just in case
+                const originalFilter = ctx.filter;
+                const originalSmoothing = ctx.imageSmoothingEnabled;
+                const originalSmoothingQuality = ctx.imageSmoothingQuality;
+
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // 2. Draw Background (Image OR Color OR Transparent)
+                // 2. Draw Background
+                let actualBgIsImage = false;
                 if (useImageBackground) {
-                    // If a valid image is ready, draw it as background
-                    drawBackgroundImage(ctx, backgroundImageObject);
-                    // Remove the CSS checkerboard class if it exists, as we have a background now
-                    canvas.classList.remove('transparent-bg');
-                } else if (isDesignatedSolid) {
-                    // If no image, but it's designated as a solid color canvas
-                    ctx.fillStyle = designatedBgColor;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    // Remove the CSS checkerboard class if it exists
-                    canvas.classList.remove('transparent-bg');
+                    if (isGrayscaleEnabled) {
+                        // Use the revised ImageData-based grayscale
+                        applyGrayscaleFilter(ctx, backgroundImageObject);
+                        actualBgIsImage = true;
+                    } else if (isDuotoneEnabled) {
+                        let duotoneColor1Hex, duotoneColor2Hex;
+                        if (canvasInfo.textColorRole === COLOR_ROLE_1) {
+                            duotoneColor1Hex = selectedColors[COLOR_ROLE_2];
+                            duotoneColor2Hex = selectedColors[COLOR_ROLE_3];
+                        } else if (canvasInfo.textColorRole === COLOR_ROLE_2) {
+                            duotoneColor1Hex = selectedColors[COLOR_ROLE_1];
+                            duotoneColor2Hex = selectedColors[COLOR_ROLE_3];
+                        } else {
+                            duotoneColor1Hex = selectedColors[COLOR_ROLE_1];
+                            duotoneColor2Hex = selectedColors[COLOR_ROLE_2];
+                        }
+                        applyDuotoneFilter(ctx, backgroundImageObject, duotoneColor1Hex, duotoneColor2Hex);
+                        actualBgIsImage = true;
+                    } else {
+                        drawBackgroundImageCover(ctx, backgroundImageObject);
+                        actualBgIsImage = true;
+                    }
+                }
+
+                if (!actualBgIsImage) {
+                    if (isDesignatedSolid) {
+                        ctx.fillStyle = designatedBgColor;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        canvas.classList.remove('transparent-bg');
+                    } else {
+                        canvas.classList.add('transparent-bg');
+                    }
                 } else {
-                    // If no image AND it's designated as transparent, do nothing to canvas context
-                    // but ensure the CSS checkerboard class is present for the element style
-                    canvas.classList.add('transparent-bg');
+                     canvas.classList.remove('transparent-bg');
                 }
 
 
                 // 3. Draw main text and symbol (if word exists)
+                // (Text/Symbol logic remains unchanged)
                 if (word) {
                     const maxWidth = canvas.width * 0.9;
                     const maxHeight = canvas.height * 0.8;
@@ -836,25 +1053,30 @@
                 }
 
                 // 4. Draw Signature if text exists (requires options to be visible)
-                if (signatureText) { // signatureText is already '' if options are hidden
+                if (signatureText) {
                     ctx.fillStyle = textColor;
                     ctx.font = '400 40px Inter';
                     ctx.textAlign = 'right';
                     ctx.textBaseline = 'bottom';
-                    ctx.letterSpacing = '0px';
+                    ctx.letterSpacing = '0px'; // Reset letter spacing for signature
                     const padding = 30;
                     const sigX = canvas.width - padding;
                     const sigY = canvas.height - padding;
                     ctx.fillText(signatureText, sigX, sigY);
                 }
-                // Reset letter spacing
+
+                // Restore original context settings
+                ctx.globalCompositeOperation = originalCompositeOp;
+                ctx.filter = originalFilter; // Reset just in case
+                ctx.imageSmoothingEnabled = originalSmoothing;
+                ctx.imageSmoothingQuality = originalSmoothingQuality;
                 ctx.letterSpacing = '0px';
             });
         });
     }
 
     function setupCanvasClickEvents() {
-        // (No changes needed here, filename generation logic remains the same)
+        // (Filename generation logic remains unchanged)
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
             if (!canvas) return;
@@ -869,12 +1091,18 @@
                         const aspectRatio = canvas.width === canvas.height ? 'SQ' : '16x9';
                         const selectedColors = getSelectedColors();
                         const textColor = selectedColors[canvasInfo.textColorRole];
-                         // Determine background description for filename (color or 'img' or 'transp')
                         let bgDesc;
-                        // Check if image should be used based on options visibility AND loaded image state
+                        let filterDesc = '';
+
                         const useImageBackground = isOptionsVisible && backgroundImageObject && backgroundImageObject.complete && backgroundImageObject.naturalWidth > 0;
-                        if(useImageBackground) {
-                            bgDesc = 'img'; // Use 'img' for both URL and pasted images
+
+                        if (useImageBackground) {
+                            bgDesc = 'img';
+                            if (isGrayscaleEnabled) {
+                                filterDesc = '_gray';
+                            } else if (isDuotoneEnabled) {
+                                filterDesc = '_duo';
+                            }
                         } else {
                              const designatedBgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
                              bgDesc = designatedBgColor === 'transparent' ? 'transp' : designatedBgColor.replace('#', '');
@@ -884,11 +1112,10 @@
                         const sigPart = sigText ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
                         const cleanTextColor = textColor.replace('#', '');
 
-                        // Use bgDesc in filename
-                        const filename = `${word}_${cleanTextColor}-on-${bgDesc}_${aspectRatio}${sigPart}.png`;
+                        const filename = `${word}_${cleanTextColor}-on-${bgDesc}${filterDesc}_${aspectRatio}${sigPart}.png`;
 
 
-                        // iOS Share API / Fallback Logic
+                        // iOS Share API / Fallback Logic (remains unchanged)
                         if (isIOS && navigator.share) {
                             fetch(dataUrl)
                                 .then(res => res.blob())
@@ -979,11 +1206,16 @@
             if (swapBtn12) swapBtn12.addEventListener('click', swapColors12);
             if (swapBtn23) swapBtn23.addEventListener('click', swapColors23);
 
-            // *** NEW: Add paste listener for background image input ***
             if (bgImageUrlInput) {
                 bgImageUrlInput.addEventListener('paste', handleImagePaste);
             }
-            // *** END NEW ***
+
+            if (grayscaleCheckbox) {
+                grayscaleCheckbox.addEventListener('change', () => handleFilterChange(grayscaleCheckbox));
+            }
+            if (duotoneCheckbox) {
+                duotoneCheckbox.addEventListener('change', () => handleFilterChange(duotoneCheckbox));
+            }
 
             let resizeTimeout;
             window.addEventListener('resize', () => {
@@ -996,7 +1228,7 @@
             setTimeout(() => {
                 if (!symbolLoaded) {
                     console.warn("Symbol image load timeout. Assuming loaded or failed, attempting draw if queued.");
-                    symbolLoaded = true;
+                    symbolLoaded = true; // Assume loaded to prevent blocking indefinitely
                     if(window.initialDrawTriggered) generateLogos();
                 }
             }, 3000);
