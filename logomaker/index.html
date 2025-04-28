@@ -516,7 +516,7 @@
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08;
     const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;
-    const IOS_VERTICAL_OFFSET_FACTOR = -0.03; // NEW: Adjust this negative value to shift UP on iOS (-0.025 = 2.5% up)
+    const IOS_VERTICAL_OFFSET_FACTOR = -0.04; // NEW: Adjust this negative value to shift UP on iOS (-0.025 = 2.5% up)
 
     const mainContainer = document.getElementById('mainContainer');
     window.initialDrawTriggered = false; // Flag to see if a draw was attempted before symbol loaded
