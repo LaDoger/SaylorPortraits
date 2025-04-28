@@ -516,6 +516,7 @@
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.08;
     const IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR = 0.12;
+    const IOS_VERTICAL_OFFSET_FACTOR = -0.03; // NEW: Adjust this negative value to shift UP on iOS (-0.025 = 2.5% up)
 
     const mainContainer = document.getElementById('mainContainer');
     window.initialDrawTriggered = false; // Flag to see if a draw was attempted before symbol loaded
@@ -550,7 +551,6 @@
 
     // --- Helper Functions ---
     function checkIOSVersionAndWarn() {
-        // (Function remains unchanged)
         const userAgent = navigator.userAgent;
         if (isIOS) {
             const match = userAgent.match(/OS (\d+)_(\d+)(?:_(\d+))? like Mac OS X/);
@@ -559,7 +559,8 @@
                 const minorVer = parseInt(match[2], 10);
                 if (!isNaN(majorVer) && !isNaN(minorVer)) {
                     if (majorVer < 18 || (majorVer === 18 && minorVer < 4)) {
-                        alert("Please upgrade to iOS 18.4. The logo will be rendered prettier!");
+                        // Alert removed as it was annoying, just log warning
+                        console.warn("Older iOS version detected (pre-18.4). Logo rendering might have minor differences.");
                     }
                 } else {
                     console.warn("Could not parse iOS version numbers from User Agent:", userAgent);
@@ -594,7 +595,6 @@
     // --- End Helper Functions ---
 
     function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
-        // (Function remains unchanged)
         if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
         try {
             const osWidth = Math.max(1, Math.round(symbolWidth));
@@ -870,7 +870,7 @@
     }
     // --- END REVISED Function ---
 
-    // Function to apply duotone filter using ImageData (Remains the same)
+    // Function to apply duotone filter using ImageData
     function applyDuotoneFilter(targetCtx, img, colorDarkHex, colorLightHex) {
         const canvasWidth = targetCtx.canvas.width;
         const canvasHeight = targetCtx.canvas.height;
@@ -939,7 +939,6 @@
                 const isDesignatedSolid = designatedBgColor !== 'transparent';
 
                 const originalCompositeOp = ctx.globalCompositeOperation;
-                // Filter property is no longer used for grayscale/duotone, but reset just in case
                 const originalFilter = ctx.filter;
                 const originalSmoothing = ctx.imageSmoothingEnabled;
                 const originalSmoothingQuality = ctx.imageSmoothingQuality;
@@ -950,7 +949,6 @@
                 let actualBgIsImage = false;
                 if (useImageBackground) {
                     if (isGrayscaleEnabled) {
-                        // Use the revised ImageData-based grayscale
                         applyGrayscaleFilter(ctx, backgroundImageObject);
                         actualBgIsImage = true;
                     } else if (isDuotoneEnabled) {
@@ -987,7 +985,6 @@
 
 
                 // 3. Draw main text and symbol (if word exists)
-                // (Text/Symbol logic remains unchanged)
                 if (word) {
                     const maxWidth = canvas.width * 0.9;
                     const maxHeight = canvas.height * 0.8;
@@ -1029,7 +1026,12 @@
                     ctx.fillStyle = textColor;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    const textY = canvas.height / 2;
+
+                    // ****** MODIFICATION FOR iOS VERTICAL POSITIONING ******
+                    const baseTextY = canvas.height / 2;
+                    const iosVerticalOffset = isIOS ? canvas.height * IOS_VERTICAL_OFFSET_FACTOR : 0;
+                    const textY = baseTextY + iosVerticalOffset;
+                    // ****** END MODIFICATION ******
 
                     ctx.font = `bold ${fontSize}px Lexend`;
                     ctx.letterSpacing = `${fontSize * -0.1}px`;
@@ -1042,6 +1044,7 @@
                     const symbolAspectRatio = symbolImg.naturalWidth / symbolImg.naturalHeight || (534 / 889);
                     const symbolWidth = symbolHeight * symbolAspectRatio;
                     const symbolX = (canvas.width / 2) + (inputActualWidth / 2) - (fontSize * 0.1);
+                    // Note: The symbol Y position is relative to the calculated textY, so it will shift up/down with the text automatically
                     const downwardShiftFactor = isIOS ? IOS_SYMBOL_DOWNWARD_SHIFT_FACTOR : BASE_SYMBOL_DOWNWARD_SHIFT_FACTOR;
                     const symbolBottomY = textY + (fontSize * downwardShiftFactor);
                     const symbolY = symbolBottomY - symbolHeight;
@@ -1076,7 +1079,6 @@
     }
 
     function setupCanvasClickEvents() {
-        // (Filename generation logic remains unchanged)
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
             if (!canvas) return;
@@ -1115,7 +1117,7 @@
                         const filename = `${word}_${cleanTextColor}-on-${bgDesc}${filterDesc}_${aspectRatio}${sigPart}.png`;
 
 
-                        // iOS Share API / Fallback Logic (remains unchanged)
+                        // iOS Share API / Fallback Logic
                         if (isIOS && navigator.share) {
                             fetch(dataUrl)
                                 .then(res => res.blob())
@@ -1161,7 +1163,6 @@
     }
 
     function resizeHandler() {
-        // (Function remains unchanged)
         const container = mainContainer;
         const totalWidth = Math.min(800, container.clientWidth); // Max width constraint
         const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 12;
