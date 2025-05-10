@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storm</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #000000;
+            --text-color: #ffffff;
+            --highlight-color: #fa660f;
+            --title-font: 'Lexend', sans-serif;
+            --content-font: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--content-font);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        #hero-logo {
+            max-width: 70%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        #hero-logo[alt]:after {
+            content: attr(alt);
+            display: block;
+            font-family: var(--title-font);
+            font-weight: 700;
+            font-size: 6rem;
+            letter-spacing: -0.1em;
+            color: var(--text-color);
+            border: 2px dashed var(--text-color);
+            padding: 20px;
+        }
+
+
+        .tagline {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--text-color);
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 25px 20px;
+        }
+
+        section {
+            /* MODIFIED: Reduced vertical padding */
+            padding: 15px 0; /* Was 30px 0 */
+        }
+        section:first-of-type {
+            /* MODIFIED: Adjusted top padding for the first section */
+             padding-top: 20px; /* Was 35px */
+        }
+
+
+        h2 {
+            font-family: var(--title-font);
+            font-weight: 700;
+            letter-spacing: -0.1em;
+            color: var(--text-color);
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #e0e0e0;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding-left: 25px;
+            position: relative;
+        }
+
+        li::before {
+            content: "\2022";
+            color: var(--highlight-color);
+            position: absolute;
+            left: 0;
+            top: 0px;
+        }
+
+        .content-types-list p {
+            margin-bottom: 10px;
+        }
+        .content-types-list em {
+            display: block;
+            margin-left: 15px;
+            font-style: normal;
+            color: #b0b0b0;
+            font-size: 1rem;
+        }
+
+
+        strong {
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .highlight, .team-handle {
+            color: var(--highlight-color);
+            font-weight: 700;
+        }
+
+        .quote {
+            font-style: italic;
+            text-align: center;
+            margin: 25px auto 12px;
+            padding: 12px;
+            max-width: 90%;
+            color: #cccccc;
+            border-left: 3px solid var(--highlight-color);
+            background-color: #0a0a0a;
+        }
+        .quote .highlight {
+            font-style: normal;
+        }
+
+        /* --- MODIFIED AND NEW TEAM STYLES START --- */
+        .team-member {
+            display: flex;
+            align-items: flex-start; /* Aligns PFP with the top of the text block */
+            margin-bottom: 20px; /* Space between each team member entry */
+        }
+        .team-member:last-of-type { /* Remove margin from the last team member */
+            margin-bottom: 0;
+        }
+
+        .team-member-pfp {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%; /* Makes it round */
+            object-fit: cover;   /* Ensures the image covers the area well, cropping if necessary */
+            margin-right: 15px;  /* Space to the right of the PFP */
+            flex-shrink: 0;      /* Prevents image from shrinking if text is long */
+            background-color: #333; /* Fallback background for PFP if image doesn't load */
+        }
+
+        .team-member p {
+            margin-bottom: 0; /* MODIFIED - Was 8px. Text block itself doesn't need bottom margin now. */
+            /* Other text properties like font-size, color are inherited or set by general p, li rule */
+        }
+        /* --- MODIFIED AND NEW TEAM STYLES END --- */
+
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: auto;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            #hero {
+                min-height: auto;
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+            #hero-logo {
+                max-width: 85%;
+            }
+            #hero-logo[alt]:after {
+                font-size: 4rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            h2 {
+                font-size: 2.2rem;
+            }
+
+            p, li {
+                font-size: 1rem;
+            }
+            .content-types-list em {
+                font-size: 0.9rem;
+            }
+
+            .team-member-pfp { /* Added for responsive PFP */
+                width: 50px;
+                height: 50px;
+                margin-right: 12px;
+            }
+        }
+         @media (max-width: 480px) {
+            #hero-logo[alt]:after {
+                font-size: 3rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+            .team-member-pfp { /* Added for responsive PFP */
+                width: 45px;
+                height: 45px;
+                margin-right: 10px;
+            }
+         }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header id="hero">
+            <!-- Make sure Storm.png is in the same directory or update path -->
+            <img src="Storm.png" alt="Storm" id="hero-logo">
+        </header>
+
+        <main>
+            <section id="what-is-storm">
+                <div class="content-container">
+                    <h2>What is Storm</h2>
+                    <p>Storm is a tech startup with aspects of a:</p>
+                    <ul>
+                        <li>Media Company</li>
+                        <li>Marketing Firm</li>
+                        <li>AI Lab</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="content-types">
+                <div class="content-container">
+                    <h2>Our Content Types</h2>
+                    <div class="content-types-list">
+                        <ul>
+                            <li><span class="highlight">Real World Content:</span> Involves cameras & mics
+                            <em>Interviews, Vlogs…</em>
+                            </li>
+                            <li><span class="highlight">Generative Content:</span> Involves custom AI models
+                            <em>Thumbnails, Memes…</em>
+                            </li>
+                            <li><span class="highlight">Interactive Content:</span> Involves AI Agents offering personalized content
+                            <em>X bots (similar to @grok)...</em>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="market">
+                <div class="content-container">
+                    <h2>The Market</h2>
+                    <ul>
+                        <li>We focus on serving <span class="highlight">Bitcoin Treasury Companies</span></li>
+                        <li>We help promote <span class="highlight">Strategy Hub Startups</span></li>
+                    </ul>
+                    <p class="quote">“In 2026 there will be 700 Bitcoin Treasury Companies.” – <span class="highlight">Phong Le</span></p>
+                </div>
+            </section>
+
+            <section id="business-model">
+                <div class="content-container">
+                    <h2>Business Model</h2>
+                    <ul>
+                        <li><strong>Media Coverage:</strong> Commissions</li>
+                        <li><strong>Marketing Service:</strong> Commissions</li>
+                        <li><strong>AI Agents:</strong> Royalties / Subscriptions</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="team">
+                <div class="content-container">
+                    <h2>Our Team</h2>
+                    <div class="team-member">
+                        <!-- Ensure ladoger.png is in the same directory or update path -->
+                        <img src="ladoger.png" alt="Profile picture of @LaDoger21" class="team-member-pfp">
+                        <p><strong class="team-handle">@LaDoger21:</strong> Michael Saylor personal digital artist; Concept artist behind Strategy 2025 rebranding</p>
+                    </div>
+                    <div class="team-member">
+                        <!-- Ensure theia.png is in the same directory or update path -->
+                        <img src="theia.png" alt="Profile picture of @ProfessorB21" class="team-member-pfp">
+                        <p><strong class="team-handle">@ProfessorB21:</strong> Produced the most viral media content for Strategy World 2025 (including interviews with Saylor and Phong)</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 Storm. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
