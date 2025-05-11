@@ -98,12 +98,10 @@
         }
 
         section {
-            /* MODIFIED: Reduced vertical padding */
-            padding: 15px 0; /* Was 30px 0 */
+            padding: 15px 0; 
         }
         section:first-of-type {
-            /* MODIFIED: Adjusted top padding for the first section */
-             padding-top: 20px; /* Was 35px */
+             padding-top: 20px; 
         }
 
 
@@ -176,31 +174,39 @@
             font-style: normal;
         }
 
-        /* --- MODIFIED AND NEW TEAM STYLES START --- */
         .team-member {
             display: flex;
-            align-items: flex-start; /* Aligns PFP with the top of the text block */
-            margin-bottom: 20px; /* Space between each team member entry */
+            align-items: flex-start; 
+            margin-bottom: 20px; 
         }
-        .team-member:last-of-type { /* Remove margin from the last team member */
+        .team-member:last-of-type { 
             margin-bottom: 0;
         }
 
         .team-member-pfp {
             width: 60px;
             height: 60px;
-            border-radius: 50%; /* Makes it round */
-            object-fit: cover;   /* Ensures the image covers the area well, cropping if necessary */
-            margin-right: 15px;  /* Space to the right of the PFP */
-            flex-shrink: 0;      /* Prevents image from shrinking if text is long */
-            background-color: #333; /* Fallback background for PFP if image doesn't load */
+            border-radius: 50%; 
+            object-fit: cover;   
+            margin-right: 15px;  
+            flex-shrink: 0;      
+            background-color: #333; 
         }
 
         .team-member p {
-            margin-bottom: 0; /* MODIFIED - Was 8px. Text block itself doesn't need bottom margin now. */
-            /* Other text properties like font-size, color are inherited or set by general p, li rule */
+            margin-bottom: 0; 
         }
-        /* --- MODIFIED AND NEW TEAM STYLES END --- */
+
+        /* --- NEW VIDEO STYLES START --- */
+        .team-video {
+            display: block; /* Allows margin auto for centering */
+            width: 100%;    /* Makes it responsive within its container */
+            max-width: 600px; /* Limits width on desktop, adjust as needed */
+            margin: 30px auto 0; /* Top margin for spacing, auto L/R for centering */
+            border-radius: 8px; /* Optional: for rounded corners */
+            background-color: #111; /* Fallback background for video area */
+        }
+        /* --- NEW VIDEO STYLES END --- */
 
 
         footer {
@@ -240,11 +246,16 @@
                 font-size: 0.9rem;
             }
 
-            .team-member-pfp { /* Added for responsive PFP */
+            .team-member-pfp { 
                 width: 50px;
                 height: 50px;
                 margin-right: 12px;
             }
+
+            /* .team-video will naturally become wider on mobile due to width: 100%
+               and the container becoming narrower. No specific mobile override needed
+               unless you want to change max-width or margins.
+            */
         }
          @media (max-width: 480px) {
             #hero-logo[alt]:after {
@@ -253,7 +264,7 @@
             h2 {
                 font-size: 1.8rem;
             }
-            .team-member-pfp { /* Added for responsive PFP */
+            .team-member-pfp { 
                 width: 45px;
                 height: 45px;
                 margin-right: 10px;
@@ -264,7 +275,6 @@
 <body>
     <div class="page-wrapper">
         <header id="hero">
-            <!-- Make sure Storm.png is in the same directory or update path -->
             <img src="Storm.png" alt="Storm" id="hero-logo">
         </header>
 
@@ -326,15 +336,21 @@
                 <div class="content-container">
                     <h2>Our Team</h2>
                     <div class="team-member">
-                        <!-- Ensure ladoger.png is in the same directory or update path -->
                         <img src="ladoger.png" alt="Profile picture of @LaDoger21" class="team-member-pfp">
                         <p><strong class="team-handle">@LaDoger21:</strong> Michael Saylor personal digital artist; Concept artist behind Strategy 2025 rebranding</p>
                     </div>
                     <div class="team-member">
-                        <!-- Ensure theia.png is in the same directory or update path -->
                         <img src="theia.png" alt="Profile picture of @ProfessorB21" class="team-member-pfp">
                         <p><strong class="team-handle">@ProfessorB21:</strong> Produced the most viral media content for Strategy World 2025 (including interviews with Saylor and Phong)</p>
                     </div>
+
+                    <!-- ADDED VIDEO ELEMENT HERE -->
+                    <video class="team-video" controls src="saylor.mp4" playsinline>
+                        Your browser does not support the video tag.
+                        <!-- Make sure saylor.mp4 is in the same folder as this HTML file -->
+                    </video>
+                    <!-- END ADDED VIDEO ELEMENT -->
+
                 </div>
             </section>
         </main>
