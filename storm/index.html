@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <meta property="og:title" content="Storm">
     <meta property="og:description" content="A Bitcoin AI Media Company">
     <meta property="og:type" content="gallery">
@@ -22,7 +22,7 @@
     <meta name="twitter:description" content="A Bitcoin AI Media Company">
     <meta name="twitter:image" content="https://ladoger.art/storm/1200-600.jpg">
     <meta name="twitter:site" content="@LaDoger21">
-    
+
     <style>
         :root {
             --background-color: #000000;
@@ -98,10 +98,10 @@
         }
 
         section {
-            padding: 15px 0; 
+            padding: 15px 0;
         }
         section:first-of-type {
-             padding-top: 20px; 
+             padding-top: 20px;
         }
 
 
@@ -176,38 +176,42 @@
 
         .team-member {
             display: flex;
-            align-items: flex-start; 
-            margin-bottom: 20px; 
+            align-items: flex-start;
+            margin-bottom: 20px;
         }
-        .team-member:last-of-type { 
+        .team-member:last-of-type {
             margin-bottom: 0;
         }
 
         .team-member-pfp {
             width: 60px;
             height: 60px;
-            border-radius: 50%; 
-            object-fit: cover;   
-            margin-right: 15px;  
-            flex-shrink: 0;      
-            background-color: #333; 
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+            flex-shrink: 0;
+            background-color: #333;
         }
 
         .team-member p {
-            margin-bottom: 0; 
+            margin-bottom: 0;
         }
 
-        /* --- NEW VIDEO STYLES START --- */
         .team-video {
-            display: block; /* Allows margin auto for centering */
-            width: 100%;    /* Makes it responsive within its container */
-            max-width: 600px; /* Limits width on desktop, adjust as needed */
-            margin: 30px auto 0; /* Top margin for spacing, auto L/R for centering */
-            border-radius: 8px; /* Optional: for rounded corners */
-            background-color: #111; /* Fallback background for video area */
+            display: block;
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto 0;
+            border-radius: 8px;
+            background-color: #111;
         }
-        /* --- NEW VIDEO STYLES END --- */
 
+        .twitter-tweet {
+            margin-top: 30px !important;
+            margin-bottom: 20px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
 
         footer {
             text-align: center;
@@ -217,7 +221,6 @@
             margin-top: auto;
         }
 
-        /* Mobile Optimizations */
         @media (max-width: 768px) {
             #hero {
                 min-height: auto;
@@ -246,16 +249,11 @@
                 font-size: 0.9rem;
             }
 
-            .team-member-pfp { 
+            .team-member-pfp {
                 width: 50px;
                 height: 50px;
                 margin-right: 12px;
             }
-
-            /* .team-video will naturally become wider on mobile due to width: 100%
-               and the container becoming narrower. No specific mobile override needed
-               unless you want to change max-width or margins.
-            */
         }
          @media (max-width: 480px) {
             #hero-logo[alt]:after {
@@ -264,7 +262,7 @@
             h2 {
                 font-size: 1.8rem;
             }
-            .team-member-pfp { 
+            .team-member-pfp {
                 width: 45px;
                 height: 45px;
                 margin-right: 10px;
@@ -344,12 +342,11 @@
                         <p><strong class="team-handle">@ProfessorB21:</strong> Produced the most viral media content for Strategy World 2025 (including interviews with Saylor and Phong)</p>
                     </div>
 
-                    <!-- ADDED VIDEO ELEMENT HERE -->
-                    <video class="team-video" controls src="saylor.mp4" playsinline>
+                    <video class="team-video" controls src="saylor-interview.mp4" poster="saylor-interview.jpg" playsinline>
                         Your browser does not support the video tag.
-                        <!-- Make sure saylor.mp4 is in the same folder as this HTML file -->
                     </video>
-                    <!-- END ADDED VIDEO ELEMENT -->
+
+                    <blockquote class="twitter-tweet"><p lang="en" dir="ltr">My bitcoin transformation captured by <a href="https://twitter.com/LaDoger21?ref_src=twsrc%5Etfw">@LaDoger21</a>.<a href="https://t.co/g1Eh2iDqDa">https://t.co/g1Eh2iDqDa</a></p>— Michael Saylor (@saylor) <a href="https://twitter.com/saylor/status/1877449267578609718?ref_src=twsrc%5Etfw">January 9, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
                 </div>
             </section>
