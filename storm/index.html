@@ -30,6 +30,7 @@
             --highlight-color: #fa660f;
             --title-font: 'Lexend', sans-serif;
             --content-font: 'Inter', sans-serif;
+            --fade-duration: 0.8s; /* Fade duration */
         }
 
         * {
@@ -45,7 +46,14 @@
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            opacity: 1; /* Start body visible */
+            transition: opacity var(--fade-duration) ease-in-out;
         }
+
+        /* Make body initially transparent if needed, but better to fade elements */
+        /* body:not(.loaded) {
+            opacity: 0;
+        } */
 
         .page-wrapper {
             display: flex;
@@ -53,14 +61,28 @@
             min-height: 100vh;
         }
 
+        /* --- Fade-in --- */
+        .fade-in {
+            opacity: 0;
+            transition: opacity var(--fade-duration) ease-in-out;
+        }
+
+        body.loaded .fade-in {
+            opacity: 1;
+        }
+        /* --- End Fade-in --- */
+
+
         #hero {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            min-height: 100vh; /* Ensures it takes full viewport height */
             padding: 40px 20px;
             text-align: center;
+            position: relative; /* Needed for potential absolute positioning if required, but flexbox works */
+            z-index: 10; /* Ensure hero is initially above main if overlap occurs */
         }
 
         #hero-logo {
@@ -69,6 +91,7 @@
             margin-bottom: 20px;
         }
 
+        /* Placeholder for the logo if it fails to load */
         #hero-logo[alt]:after {
             content: attr(alt);
             display: block;
@@ -88,6 +111,17 @@
             color: var(--text-color);
             max-width: 600px;
             margin-top: 10px;
+            /* Also apply fade-in if needed */
+            opacity: 0;
+            transition: opacity var(--fade-duration) ease-in-out 0.2s; /* Delay slightly */
+        }
+        body.loaded .tagline {
+            opacity: 1;
+        }
+
+        main {
+             /* Initially hidden for mobile scroll effect below */
+             /* Will be revealed via JS + CSS */
         }
 
         .content-container {
@@ -127,6 +161,7 @@
         li {
             padding-left: 25px;
             position: relative;
+            margin-bottom: 20px; /* Added space between list items */
         }
 
         li::before {
@@ -210,6 +245,10 @@
             margin-bottom: 20px !important;
             margin-left: auto !important;
             margin-right: auto !important;
+            /* Ensure tweets don't break layout before loading */
+            min-height: 100px;
+            background-color: #15181c; /* Dark theme placeholder */
+            border-radius: 10px;
         }
 
         footer {
@@ -218,13 +257,20 @@
             font-size: 0.9rem;
             color: #777;
             margin-top: auto;
+            /* Fade in footer too */
+            opacity: 0;
+            transition: opacity var(--fade-duration) ease-in-out 0.4s;
         }
+         body.loaded footer {
+             opacity: 1;
+         }
 
+        /* --- Mobile Specific Styles --- */
         @media (max-width: 768px) {
             #hero {
-                min-height: auto;
-                padding-top: 60px;
-                padding-bottom: 40px;
+                /* Already min-height: 100vh. Ensures it fills the screen initially */
+                 padding-top: 60px; /* Adjust padding if needed */
+                 padding-bottom: 40px;
             }
             #hero-logo {
                 max-width: 85%;
@@ -236,6 +282,19 @@
             .tagline {
                 font-size: 1.2rem;
             }
+
+            /* Initially hide main content on mobile */
+            main.fade-in {
+                opacity: 0;
+                pointer-events: none; /* Prevent interaction when hidden */
+                /* The transition is already defined in the .fade-in rule */
+            }
+
+             /* Reveal main content on mobile ONLY when body has 'loaded' and 'content-visible' */
+            body.loaded.content-visible main.fade-in {
+                 opacity: 1;
+                 pointer-events: auto; /* Allow interaction again */
+             }
 
             h2 {
                 font-size: 2.2rem;
@@ -254,15 +313,16 @@
                 margin-right: 12px;
             }
         }
+
          @media (max-width: 480px) {
             #hero-logo[alt]:after {
                 font-size: 3rem;
             }
             h2 {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             .team-member-pfp {
-                width: 60px;
+                width: 60px; /* This seems larger than the 768px breakpoint? Maybe adjust */
                 height: 60px;
                 margin-right: 10px;
             }
@@ -272,10 +332,14 @@
 <body>
     <div class="page-wrapper">
         <header id="hero">
-            <img src="Storm.png" alt="Storm" id="hero-logo">
+            <!-- Added fade-in class -->
+            <img src="Storm.png" alt="Storm" id="hero-logo" class="fade-in">
+            <!-- Tagline can also fade -->
+            <!-- <p class="tagline">A Bitcoin AI Media Company</p> -->
         </header>
 
-        <main>
+        <!-- Added fade-in class to main -->
+        <main class="fade-in">
             <section id="what-is-storm">
                 <div class="content-container">
                     <h2>What is Storm</h2>
@@ -295,7 +359,7 @@
                         <ul>
                             <li><span class="highlight">Real World Content:</span> Involves cameras & mics
                             <em>Interviews, Vlogs…</em>
-                                <blockquote class="twitter-tweet" data-theme="dark"><p lang="en" dir="ltr">What’s the one thing Michael <a href="https://twitter.com/saylor?ref_src=twsrc%5Etfw">@saylor</a> wants you to know about Bitcoin??!!! <a href="https://t.co/nseJzCXGeD">pic.twitter.com/nseJzCXGeD</a></p>&mdash; Professor₿ 🟧 (@ProfessorB21) <a href="https://twitter.com/ProfessorB21/status/1920289349347811328?ref_src=twsrc%5Etfw">May 8, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                                <blockquote class="twitter-tweet" data-theme="dark"><p lang="en" dir="ltr">What’s the one thing Michael <a href="https://twitter.com/saylor?ref_src=twsrc%5Etfw">@saylor</a> wants you to know about Bitcoin??!!! <a href="https://t.co/nseJzCXGeD">pic.twitter.com/nseJzCXGeD</a></p>— Professor₿ 🟧 (@ProfessorB21) <a href="https://twitter.com/ProfessorB21/status/1920289349347811328?ref_src=twsrc%5Etfw">May 8, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                             </li>
                             <li><span class="highlight">Generative Content:</span> Involves custom AI models
                             <em>Thumbnails, Memes…</em>
@@ -303,7 +367,7 @@
                             </li>
                             <li><span class="highlight">Interactive Content:</span> Involves AI Agents offering personalized content
                             <em>X bots (similar to @grok)...</em>
-                                <blockquote class="twitter-tweet" data-theme="dark"><p lang="en" dir="ltr">Michael Saylor talks about Digital Saylor <a href="https://t.co/3irclRGWwD">pic.twitter.com/3irclRGWwD</a></p>&mdash; Digital Saylor 🟧 (Parody) (@saylor_digital) <a href="https://twitter.com/saylor_digital/status/1904937670167707786?ref_src=twsrc%5Etfw">March 26, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                                <blockquote class="twitter-tweet" data-theme="dark"><p lang="en" dir="ltr">Michael Saylor talks about Digital Saylor <a href="https://t.co/3irclRGWwD">pic.twitter.com/3irclRGWwD</a></p>— Digital Saylor 🟧 (Parody) (@saylor_digital) <a href="https://twitter.com/saylor_digital/status/1904937670167707786?ref_src=twsrc%5Etfw">March 26, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                             </li>
                         </ul>
                     </div>
@@ -355,5 +419,57 @@
             <p>© 2025 Storm. All rights reserved.</p>
         </footer>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add 'loaded' class to trigger initial fades defined in CSS
+            document.body.classList.add('loaded');
+
+            const mobileBreakpoint = 768;
+            let scrolledOnMobile = false; // Flag to ensure we only add the class once
+
+            const handleScroll = () => {
+                // Check if we are on mobile and haven't scrolled yet
+                if (window.innerWidth <= mobileBreakpoint && !scrolledOnMobile) {
+                     // Check if user has actually scrolled down a bit, not just initial load tiny scroll events
+                    if (window.scrollY > 10) {
+                        document.body.classList.add('content-visible');
+                        scrolledOnMobile = true; // Set flag
+                        // Optional: remove the listener once triggered for performance
+                        window.removeEventListener('scroll', handleScroll);
+                    }
+                }
+                // If not on mobile, ensure content is visible immediately (handled by CSS rule for non-mobile)
+                // Or add the class anyway if you want scroll reveal on desktop too
+                 else if (window.innerWidth > mobileBreakpoint) {
+                     // On desktop, content visibility is handled by 'loaded' class alone for 'main'
+                     // No need to add 'content-visible' unless you want different behavior
+                     // If resizing from mobile *after* scrolling, the class might persist, which is okay
+                     // We can remove the listener if we're no longer mobile and it hasn't fired
+                     if (!scrolledOnMobile) {
+                         window.removeEventListener('scroll', handleScroll);
+                     }
+                 }
+            };
+
+            // Attach scroll listener
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
+            // Initial check in case the page loads already scrolled (less likely but possible)
+             handleScroll();
+
+             // Handle resize: If resizing to desktop, ensure content becomes visible
+             // The CSS should handle this implicitly, but we can remove the listener
+             window.addEventListener('resize', () => {
+                if (window.innerWidth > mobileBreakpoint && !scrolledOnMobile) {
+                     // If we resize to desktop before scrolling on mobile, remove listener
+                     window.removeEventListener('scroll', handleScroll);
+                } else if (window.innerWidth <= mobileBreakpoint && !scrolledOnMobile && !document.body.classList.contains('content-visible')) {
+                     // If we resize back to mobile *before* scrolling, re-attach listener if it was removed
+                     // (Simpler: just leave listener attached, it checks width anyway)
+                }
+             });
+        });
+    </script>
 </body>
 </html>
