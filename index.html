@@ -182,6 +182,7 @@
                     if (isVideo) {
                         element = document.createElement('video');
                         element.controls = true;
+                        element.loop = true;
                         element.preload = 'none'; // Don't download video until played
                         // Poster image is same hash but .jpg
                         const posterSrc = `images/${name.substring(0, name.lastIndexOf('.'))}.jpg`;
