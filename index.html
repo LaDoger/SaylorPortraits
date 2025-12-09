@@ -78,7 +78,7 @@
             box-sizing: border-box;
             gap: 5px;
         }
-        .gallery img {
+        .gallery img, .gallery video {
             width: 100%;
             height: auto;
             display: block;
@@ -141,9 +141,13 @@
         const observer = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    observer.unobserve(img);
+                    const el = entry.target;
+                    if (el.tagName === 'IMG') {
+                        el.src = el.dataset.src;
+                    } else if (el.tagName === 'VIDEO') {
+                        el.poster = el.dataset.poster;
+                    }
+                    observer.unobserve(el);
                 }
             });
         }, { rootMargin: '200px' });
@@ -171,23 +175,46 @@
 
                 // Load images
                 imageNames.forEach((name, index) => {
-                    const img = document.createElement('img');
-                    img.alt = "Michael Saylor Portrait";
-                    const imgSrc = `images/${name}`;
-                    
-                    // Load first 3 immediately, lazy load the rest
-                    if (index < 3) {
-                        img.src = imgSrc;
+                    const isVideo = name.match(/\.(mp4|mov|webm|mkv|avi)$/i);
+                    let element;
+                    const mediaSrc = `images/${name}`;
+
+                    if (isVideo) {
+                        element = document.createElement('video');
+                        element.controls = true;
+                        element.preload = 'none'; // Don't download video until played
+                        // Poster image is same hash but .jpg
+                        const posterSrc = `images/${name.substring(0, name.lastIndexOf('.'))}.jpg`;
+                        
+                        // Handle Lazy Loading for Poster
+                        if (index < 3) {
+                            element.poster = posterSrc;
+                        } else {
+                            element.dataset.poster = posterSrc;
+                            observer.observe(element);
+                        }
+                        
+                        element.src = mediaSrc;
+                        
                     } else {
-                        img.dataset.src = imgSrc;
-                        observer.observe(img);
+                        element = document.createElement('img');
+                        element.alt = "Michael Saylor Portrait";
+                        
+                        // Load first 3 immediately, lazy load the rest
+                        if (index < 3) {
+                            element.src = mediaSrc;
+                        } else {
+                            element.dataset.src = mediaSrc;
+                            observer.observe(element);
+                        }
+                        
+                        element.style.cursor = 'pointer';
+                        element.addEventListener('click', () => {
+                            window.open(element.src || element.dataset.src, '_blank');
+                        });
                     }
-                    img.style.cursor = 'pointer';
-                    img.addEventListener('click', () => {
-                        window.open(img.src || img.dataset.src, '_blank');
-                    });
                     
-                    gallery.appendChild(img);
+                    gallery.appendChild(element);
                 });
             })
             .catch(error => {
