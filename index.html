@@ -165,16 +165,22 @@
             return array;
         }
 
-        fetch('images.txt')
-            .then(response => response.text())
-            .then(data => {
-                let imageNames = data.trim().split(/\r?\n/).filter(name => name.trim() !== '');
-                
-                // Shuffle images
+        Promise.all([
+            fetch('pinned.txt').then(r => r.text()).catch(() => ''),
+            fetch('images.txt').then(r => r.text())
+        ]).then(([pinnedData, imagesData]) => {
+                const pinnedNames = pinnedData.trim().split(/\r?\n/).filter(n => n.trim() !== '');
+                const pinnedSet = new Set(pinnedNames);
+                let imageNames = imagesData.trim().split(/\r?\n/).filter(name => name.trim() !== '' && !pinnedSet.has(name.trim()));
+
+                // Shuffle non-pinned images
                 imageNames = shuffleArray(imageNames);
 
+                // Pinned first, then shuffled
+                const allNames = [...pinnedNames, ...imageNames];
+
                 // Load images
-                imageNames.forEach((name, index) => {
+                allNames.forEach((name, index) => {
                     const isVideo = name.match(/\.(mp4|mov|webm|mkv|avi)$/i);
                     let element;
                     const mediaSrc = `images/${name}`;
