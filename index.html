@@ -85,6 +85,26 @@
             display: block;
             object-fit: contain;
         }
+        .video-wrap {
+            position: relative;
+        }
+        .video-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 0 10px 18px;
+            border-color: transparent transparent transparent rgba(255, 255, 255, 0.85);
+            filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .video-wrap.playing::after {
+            opacity: 0;
+        }
         @media (hover: hover) {
             .gallery video {
                 cursor: pointer;
@@ -195,6 +215,9 @@
                     const mediaSrc = `images/${name}`;
 
                     if (isVideo) {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'video-wrap';
+
                         element = document.createElement('video');
                         element.loop = true;
                         element.playsInline = true;
@@ -219,27 +242,54 @@
                         const hasHover = window.matchMedia('(hover: hover)').matches;
 
                         if (hasHover) {
-                            // Desktop: hover to preview muted, click to play with sound
-                            element.addEventListener('mouseenter', () => {
+                            const onEnter = () => {
                                 element.muted = true;
                                 element.play().catch(() => {});
-                            });
-                            element.addEventListener('mouseleave', () => {
+                                wrap.classList.add('playing');
+                            };
+                            const onLeave = () => {
                                 element.pause();
                                 element.currentTime = 0;
                                 element.muted = false;
                                 element.controls = false;
-                            });
+                                wrap.classList.remove('playing');
+                            };
+                            element.addEventListener('mouseenter', onEnter);
+                            element.addEventListener('mouseleave', onLeave);
                             element.addEventListener('click', () => {
                                 element.muted = false;
                                 element.controls = true;
                                 element.currentTime = 0;
                                 element.play().catch(() => {});
+                                wrap.classList.add('playing');
+                                if (element.webkitEnterFullscreen) {
+                                    element.webkitEnterFullscreen();
+                                } else if (element.requestFullscreen) {
+                                    element.requestFullscreen();
+                                } else if (wrap.requestFullscreen) {
+                                    wrap.requestFullscreen();
+                                }
                             });
+
+                            // Reset to preview state when exiting fullscreen
+                            const onFullscreenExit = () => {
+                                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                                    element.pause();
+                                    element.currentTime = 0;
+                                    element.muted = false;
+                                    element.controls = false;
+                                    wrap.classList.remove('playing');
+                                }
+                            };
+                            document.addEventListener('fullscreenchange', onFullscreenExit);
+                            document.addEventListener('webkitfullscreenchange', onFullscreenExit);
                         } else {
-                            // Mobile: tap to play normally
                             element.controls = true;
                         }
+
+                        wrap.appendChild(element);
+                        gallery.appendChild(wrap);
+                        return; // skip the gallery.appendChild below
 
                     } else {
                         element = document.createElement('img');
