@@ -85,6 +85,11 @@
             display: block;
             object-fit: contain;
         }
+        @media (hover: hover) {
+            .gallery video {
+                cursor: pointer;
+            }
+        }
         footer {
             width: 100%;
             text-align: center;
@@ -191,13 +196,12 @@
 
                     if (isVideo) {
                         element = document.createElement('video');
-                        element.controls = true;
                         element.loop = true;
                         element.playsInline = true;
+                        element.style.cursor = 'pointer';
                         const posterSrc = `images/${name.substring(0, name.lastIndexOf('.'))}.jpg`;
 
                         if (index < pinnedNames.length) {
-                            // Pinned videos: load poster + src immediately, preload metadata for quick play
                             element.poster = posterSrc;
                             element.src = mediaSrc;
                             element.preload = 'metadata';
@@ -210,6 +214,31 @@
                             element.dataset.poster = posterSrc;
                             element.dataset.src = mediaSrc;
                             observer.observe(element);
+                        }
+
+                        const hasHover = window.matchMedia('(hover: hover)').matches;
+
+                        if (hasHover) {
+                            // Desktop: hover to preview muted, click to play with sound
+                            element.addEventListener('mouseenter', () => {
+                                element.muted = true;
+                                element.play().catch(() => {});
+                            });
+                            element.addEventListener('mouseleave', () => {
+                                element.pause();
+                                element.currentTime = 0;
+                                element.muted = false;
+                                element.controls = false;
+                            });
+                            element.addEventListener('click', () => {
+                                element.muted = false;
+                                element.controls = true;
+                                element.currentTime = 0;
+                                element.play().catch(() => {});
+                            });
+                        } else {
+                            // Mobile: tap to play normally
+                            element.controls = true;
                         }
 
                     } else {
