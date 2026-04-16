@@ -270,6 +270,8 @@
                             element.addEventListener('mouseenter', onEnter);
                             element.addEventListener('mouseleave', onLeave);
                             element.addEventListener('click', () => {
+                                // If already in fullscreen, let native controls handle it
+                                if (document.fullscreenElement || document.webkitFullscreenElement) return;
                                 // Remove hover listeners so fullscreen transition doesn't retrigger them
                                 element.removeEventListener('mouseenter', onEnter);
                                 element.removeEventListener('mouseleave', onLeave);
