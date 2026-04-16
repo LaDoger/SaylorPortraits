@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SaylorArt</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     
     <meta property="og:title" content="Saylor Portraits">
     <meta property="og:description" content="Michael Saylor Art">
@@ -110,15 +111,14 @@
             }
         }
     </style>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PFS6XG5M9V"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-PFS6XG5M9V');
+    </script>
 </head>
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PFS6XG5M9V"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-PFS6XG5M9V');
-</script>
 
 <body>
 <div class="content-wrapper">
@@ -145,12 +145,16 @@
                     if (el.tagName === 'IMG') {
                         el.src = el.dataset.src;
                     } else if (el.tagName === 'VIDEO') {
-                        el.poster = el.dataset.poster;
+                        if (el.dataset.poster) el.poster = el.dataset.poster;
+                        if (el.dataset.src) {
+                            el.src = el.dataset.src;
+                            el.preload = 'metadata';
+                        }
                     }
                     observer.unobserve(el);
                 }
             });
-        }, { rootMargin: '200px' });
+        }, { rootMargin: '400px' });
 
         // Disable right-click/long-press globally
         // document.body.addEventListener('contextmenu', (e) => {
@@ -189,32 +193,37 @@
                         element = document.createElement('video');
                         element.controls = true;
                         element.loop = true;
-                        element.preload = 'none'; // Don't download video until played
-                        // Poster image is same hash but .jpg
+                        element.playsInline = true;
                         const posterSrc = `images/${name.substring(0, name.lastIndexOf('.'))}.jpg`;
-                        
-                        // Handle Lazy Loading for Poster
-                        if (index < 3) {
+
+                        if (index < pinnedNames.length) {
+                            // Pinned videos: load poster + src immediately, preload metadata for quick play
                             element.poster = posterSrc;
+                            element.src = mediaSrc;
+                            element.preload = 'metadata';
+                        } else if (index < 3) {
+                            element.poster = posterSrc;
+                            element.src = mediaSrc;
+                            element.preload = 'none';
                         } else {
+                            element.preload = 'none';
                             element.dataset.poster = posterSrc;
+                            element.dataset.src = mediaSrc;
                             observer.observe(element);
                         }
-                        
-                        element.src = mediaSrc;
-                        
+
                     } else {
                         element = document.createElement('img');
                         element.alt = "Michael Saylor Portrait";
-                        
-                        // Load first 3 immediately, lazy load the rest
+
                         if (index < 3) {
                             element.src = mediaSrc;
+                            if (index === 0) element.fetchPriority = 'high';
                         } else {
                             element.dataset.src = mediaSrc;
                             observer.observe(element);
                         }
-                        
+
                         element.style.cursor = 'pointer';
                         element.addEventListener('click', () => {
                             window.open(element.src || element.dataset.src, '_blank');
