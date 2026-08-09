@@ -119,6 +119,30 @@
             .video-wrap.playing::before {
                 opacity: 0;
             }
+            .volume-btn {
+                position: absolute;
+                bottom: 14px;
+                right: 14px;
+                width: 36px;
+                height: 36px;
+                background: rgba(0, 0, 0, 0.6);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                opacity: 0;
+                transition: opacity 0.2s;
+                z-index: 2;
+            }
+            .video-wrap.playing .volume-btn {
+                opacity: 1;
+            }
+            .volume-btn svg {
+                width: 18px;
+                height: 18px;
+                fill: white;
+            }
         }
         @media (hover: hover) {
             .gallery video {
@@ -257,8 +281,21 @@
                         const hasHover = window.matchMedia('(hover: hover)').matches;
 
                         if (hasHover) {
+                            const volumeBtn = document.createElement('div');
+                            volumeBtn.className = 'volume-btn';
+                            const iconMuted = '<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L18.73 21 20 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+                            const iconUnmuted = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+                            volumeBtn.innerHTML = iconMuted;
+                            volumeBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                element.muted = !element.muted;
+                                volumeBtn.innerHTML = element.muted ? iconMuted : iconUnmuted;
+                            });
+                            wrap.appendChild(volumeBtn);
+
                             const onEnter = () => {
                                 element.muted = true;
+                                volumeBtn.innerHTML = iconMuted;
                                 element.play().catch(() => {});
                                 wrap.classList.add('playing');
                             };
@@ -269,14 +306,14 @@
                                 element.controls = false;
                                 wrap.classList.remove('playing');
                             };
-                            element.addEventListener('mouseenter', onEnter);
-                            element.addEventListener('mouseleave', onLeave);
+                            wrap.addEventListener('mouseenter', onEnter);
+                            wrap.addEventListener('mouseleave', onLeave);
                             element.addEventListener('click', () => {
                                 // If already in fullscreen, let native controls handle it
                                 if (document.fullscreenElement || document.webkitFullscreenElement) return;
                                 // Remove hover listeners so fullscreen transition doesn't retrigger them
-                                element.removeEventListener('mouseenter', onEnter);
-                                element.removeEventListener('mouseleave', onLeave);
+                                wrap.removeEventListener('mouseenter', onEnter);
+                                wrap.removeEventListener('mouseleave', onLeave);
                                 element.muted = false;
                                 element.controls = true;
                                 element.currentTime = 0;
@@ -300,8 +337,8 @@
                                     element.controls = false;
                                     wrap.classList.remove('playing');
                                     // Restore hover listeners
-                                    element.addEventListener('mouseenter', onEnter);
-                                    element.addEventListener('mouseleave', onLeave);
+                                    wrap.addEventListener('mouseenter', onEnter);
+                                    wrap.addEventListener('mouseleave', onLeave);
                                 }
                             };
                             document.addEventListener('fullscreenchange', onFullscreenExit);
