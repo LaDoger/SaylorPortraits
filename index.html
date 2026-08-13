@@ -148,17 +148,24 @@
                 bottom: 0;
                 left: 0;
                 width: 100%;
-                height: 4px;
-                background: rgba(255, 255, 255, 0.3);
+                height: 10px;
                 cursor: pointer;
                 z-index: 3;
                 opacity: 0;
-                transition: opacity 0.2s, height 0.15s;
+                transition: opacity 0.2s;
+                display: flex;
+                align-items: flex-end;
             }
             .video-wrap.playing .progress-bar {
                 opacity: 1;
             }
-            .progress-bar:hover {
+            .progress-bar-track {
+                width: 100%;
+                height: 3px;
+                background: rgba(255, 255, 255, 0.3);
+                transition: height 0.15s;
+            }
+            .progress-bar:hover .progress-bar-track {
                 height: 7px;
             }
             .progress-bar-fill {
@@ -166,6 +173,7 @@
                 width: 0%;
                 background: #FA660F;
                 pointer-events: none;
+                transition: width 0.25s linear;
             }
         }
         @media (hover: hover) {
@@ -322,9 +330,12 @@
 
                             const progressBar = document.createElement('div');
                             progressBar.className = 'progress-bar';
+                            const progressTrack = document.createElement('div');
+                            progressTrack.className = 'progress-bar-track';
                             const progressFill = document.createElement('div');
                             progressFill.className = 'progress-bar-fill';
-                            progressBar.appendChild(progressFill);
+                            progressTrack.appendChild(progressFill);
+                            progressBar.appendChild(progressTrack);
                             progressBar.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 if (!isFinite(element.duration) || element.duration <= 0) return;
