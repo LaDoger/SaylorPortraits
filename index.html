@@ -143,6 +143,30 @@
                 height: 18px;
                 fill: white;
             }
+            .progress-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.3);
+                cursor: pointer;
+                z-index: 3;
+                opacity: 0;
+                transition: opacity 0.2s, height 0.15s;
+            }
+            .video-wrap.playing .progress-bar {
+                opacity: 1;
+            }
+            .progress-bar:hover {
+                height: 7px;
+            }
+            .progress-bar-fill {
+                height: 100%;
+                width: 0%;
+                background: #FA660F;
+                pointer-events: none;
+            }
         }
         @media (hover: hover) {
             .gallery video {
@@ -296,6 +320,24 @@
                             });
                             wrap.appendChild(volumeBtn);
 
+                            const progressBar = document.createElement('div');
+                            progressBar.className = 'progress-bar';
+                            const progressFill = document.createElement('div');
+                            progressFill.className = 'progress-bar-fill';
+                            progressBar.appendChild(progressFill);
+                            progressBar.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                if (!isFinite(element.duration) || element.duration <= 0) return;
+                                const rect = progressBar.getBoundingClientRect();
+                                const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                                element.currentTime = ratio * element.duration;
+                            });
+                            wrap.appendChild(progressBar);
+                            element.addEventListener('timeupdate', () => {
+                                if (!isFinite(element.duration) || element.duration <= 0) return;
+                                progressFill.style.width = `${(element.currentTime / element.duration) * 100}%`;
+                            });
+
                             const onEnter = () => {
                                 element.muted = !previewUnmuted;
                                 volumeBtn.innerHTML = previewUnmuted ? iconUnmuted : iconMuted;
@@ -308,6 +350,7 @@
                                 element.muted = false;
                                 element.controls = false;
                                 wrap.classList.remove('playing');
+                                progressFill.style.width = '0%';
                             };
                             wrap.addEventListener('mouseenter', onEnter);
                             wrap.addEventListener('mouseleave', onLeave);
