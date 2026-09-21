@@ -271,11 +271,12 @@
             fetch('pinned.txt').then(r => r.text()).catch(() => ''),
             fetch('images.txt').then(r => r.text())
         ]).then(([pinnedData, imagesData]) => {
-                const pinnedNames = pinnedData.trim().split(/\r?\n/).filter(n => n.trim() !== '');
+                let pinnedNames = pinnedData.trim().split(/\r?\n/).filter(n => n.trim() !== '');
                 const pinnedSet = new Set(pinnedNames);
                 let imageNames = imagesData.trim().split(/\r?\n/).filter(name => name.trim() !== '' && !pinnedSet.has(name.trim()));
 
-                // Shuffle non-pinned images
+                // Shuffle both groups independently; pinned still shows first
+                pinnedNames = shuffleArray(pinnedNames);
                 imageNames = shuffleArray(imageNames);
 
                 // Pinned first, then shuffled
