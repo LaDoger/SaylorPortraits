@@ -1,0 +1,32 @@
+name: Mirror to ladoger.si
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: mirror-ladoger-si
+  cancel-in-progress: false
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src
+      - name: Sync exact copy (only CNAME differs) to LaDoger/ladoger.si
+        env:
+          KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git clone --depth 1 git@github.com:LaDoger/ladoger.si.git mirror
+          rsync -a --delete --exclude .git --exclude .github src/ mirror/
+          echo "ladoger.si" > mirror/CNAME
+          cd mirror
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Mirror already up to date"; exit 0; fi
+          git commit -q -m "Mirror of SaylorPortraits@${GITHUB_SHA::7}"
+          git push origin main
